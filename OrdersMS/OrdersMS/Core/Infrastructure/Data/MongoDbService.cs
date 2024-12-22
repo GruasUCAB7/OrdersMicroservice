@@ -31,9 +31,19 @@ namespace OrdersMS.Core.Infrastructure.Data
             return _database.GetCollection<BsonDocument>("order");
         }
 
-        public IMongoCollection<BsonDocument> GetDriverCollection()
+        public IMongoCollection<BsonDocument> GetInsuredVehicleCollection()
         {
-            return _database.GetCollection<BsonDocument>("driver");
+            return _database.GetCollection<BsonDocument>("insuredVehicle");
+        }
+
+        public IMongoCollection<BsonDocument> GetContractCollection()
+        {
+            return _database.GetCollection<BsonDocument>("contract");
+        }
+
+        public IMongoCollection<BsonDocument> GetExtraCostCollection()
+        {
+            return _database.GetCollection<BsonDocument>("extraCost");
         }
     }
 }
