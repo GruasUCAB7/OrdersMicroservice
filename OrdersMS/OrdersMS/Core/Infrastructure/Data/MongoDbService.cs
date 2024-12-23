@@ -36,6 +36,11 @@ namespace OrdersMS.Core.Infrastructure.Data
             return _database.GetCollection<BsonDocument>("insuredVehicle");
         }
 
+        public IMongoCollection<BsonDocument> GetInsurancePolicyCollection()
+        {
+            return _database.GetCollection<BsonDocument>("insurancePolicy");
+        }
+
         public IMongoCollection<BsonDocument> GetContractCollection()
         {
             return _database.GetCollection<BsonDocument>("contract");

@@ -8,21 +8,23 @@ namespace OrdersMS.Core.Domain.Aggregates
 {
     public abstract class AggregateRoot<T>(T id) : Entity<T>(id) where T : class, IValueObject<T>
     {
-        private readonly List<DomainEvent<object>> _events = [];
+        private readonly List<DomainEvent<object>> Events = [];
+
+        protected new T Id { get; private set; } = id;
 
         public List<DomainEvent<object>> PullEvents()
         {
-            var events = new List<DomainEvent<object>>(_events);
-            _events.Clear();
+            var events = new List<DomainEvent<object>>(Events);
+            Events.Clear();
             return events;
         }
 
-        public void Apply(DomainEvent<object> Event)
+        public void Apply(DomainEvent<object> @event)
         {
-            MethodInfo? Handler = GetEventHandler(Event) ?? throw new Exception($"Handler not found for event: {Event.GetType().Name}");
-            _events.Add(Event);
-            Handler.Invoke(this, new object[] { Event });
+            var handler = GetEventHandler(@event) ?? throw new Exception($"Handler not found for event: {@event.GetType().Name}");
+            handler.Invoke(this, new object[] { @event.Context });
             ValidateState();
+            Events.Add(@event);
         }
 
         private protected MethodInfo? GetEventHandler(DomainEvent<object> Event)

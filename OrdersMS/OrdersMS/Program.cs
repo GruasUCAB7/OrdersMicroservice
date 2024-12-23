@@ -6,11 +6,13 @@ using OrdersMS.Core.Application.Logger;
 using OrdersMS.Core.Infrastructure.Data;
 using OrdersMS.Core.Infrastructure.Logger;
 using OrdersMS.Core.Infrastructure.UUID;
-using OrdersMS.src.InsuredVehicles.Application.Commands.CreateInsuredVehicle.Types;
-using OrdersMS.src.InsuredVehicles.Application.Commands.UpdateInsuredVehicle.Types;
-using OrdersMS.src.InsuredVehicles.Application.Repositories;
-using OrdersMS.src.InsuredVehicles.Infrastructure.Repositories;
-using OrdersMS.src.InsuredVehicles.Infrastructure.Validators;
+using OrdersMS.src.Contracts.Application.Commands.CreateInsurancePolicy.Types;
+using OrdersMS.src.Contracts.Application.Commands.CreateInsuredVehicle.Types;
+using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredPolicy.Types;
+using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredVehicle.Types;
+using OrdersMS.src.Contracts.Application.Repositories;
+using OrdersMS.src.Contracts.Infrastructure.Repositories;
+using OrdersMS.src.Contracts.Infrastructure.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +23,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddTransient<IValidator<CreateVehicleCommand>, CreateVehicleValidator>();
 builder.Services.AddTransient<IValidator<UpdateVehicleCommand>, UpdateVehicleValidator>();
+builder.Services.AddTransient<IValidator<CreatePolicyCommand>, CreatePolicyValidator>();
+builder.Services.AddTransient<IValidator<UpdatePolicyCommand>, UpdatePolicyValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
+builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddSwaggerGen(c =>
