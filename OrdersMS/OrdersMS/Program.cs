@@ -15,6 +15,11 @@ using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredVehicle.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Validators;
+using OrdersMS.src.Orders.Application.Commands.CreateExtraCost.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateExtraCost.Types;
+using OrdersMS.src.Orders.Application.Repositories;
+using OrdersMS.src.Orders.Infrastructure.Repositories;
+using OrdersMS.src.Orders.Infrastructure.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +34,12 @@ builder.Services.AddTransient<IValidator<CreatePolicyCommand>, CreatePolicyValid
 builder.Services.AddTransient<IValidator<UpdatePolicyCommand>, UpdatePolicyValidator>();
 builder.Services.AddTransient<IValidator<CreateContractCommand>, CreateContractValidator>();
 builder.Services.AddTransient<IValidator<UpdateContractCommand>, UpdateContractValidator>();
+builder.Services.AddTransient<IValidator<CreateExtraCostCommand>, CreateExtraCostValidator>();
+builder.Services.AddTransient<IValidator<UpdateExtraCostCommand>, UpdateExtraCostValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
 builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IContractRepository, MongoContractRepository>();
+builder.Services.AddScoped<IExtraCostRepository, MongoExtraCostRepository>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddSwaggerGen(c =>
