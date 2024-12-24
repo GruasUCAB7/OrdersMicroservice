@@ -6,16 +6,16 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
     public class PolicyType : IValueObject<PolicyType>
     {
         public static readonly string Basica = "Basica";
-        public static readonly string Premiun = "Premiun";
+        public static readonly string Premium = "Premium";
         public static readonly string Diamante = "Diamante";
 
         public string Type { get; }
 
         public PolicyType(string type)
         {
-            if (type != Basica && type != Premiun && type != Diamante)
+            if (type != Basica && type != Premium && type != Diamante)
             {
-                throw new InvalidPolicyTypeException($"Invalid policy type: {type}. Allowed values are: {Basica}, {Premiun}, {Diamante}.");
+                throw new InvalidPolicyTypeException($"Invalid policy type: {type}. Allowed values are: {Basica}, {Premium}, {Diamante}.");
             }
             Type = type;
         }

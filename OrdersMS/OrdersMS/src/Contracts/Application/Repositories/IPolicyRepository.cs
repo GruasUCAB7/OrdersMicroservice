@@ -12,5 +12,6 @@ namespace OrdersMS.src.Contracts.Application.Repositories
         Task<Optional<InsurancePolicy>> GetById(string id);
         Task<Result<InsurancePolicy>> Save(InsurancePolicy policy);
         Task<Result<InsurancePolicy>> Update(InsurancePolicy policy);
+        Task<bool> IsActivePolicy(string id);
     }
 }

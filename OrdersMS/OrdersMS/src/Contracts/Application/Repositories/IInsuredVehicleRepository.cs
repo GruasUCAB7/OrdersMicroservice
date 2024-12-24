@@ -12,5 +12,6 @@ namespace OrdersMS.src.Contracts.Application.Repositories
         Task<Optional<InsuredVehicle>> GetById(string id);
         Task<Result<InsuredVehicle>> Save(InsuredVehicle vehicle);
         Task<Result<InsuredVehicle>> Update(InsuredVehicle vehicle);
+        Task<bool> IsActiveVehicle(string id);
     }
 }

@@ -2,7 +2,7 @@
 {
     public class PolicyNotFoundException : ApplicationException
     {
-        public PolicyNotFoundException() : base("Insurance policy not found")
+        public PolicyNotFoundException() : base("Policy not found")
         {
         }
     }
