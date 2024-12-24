@@ -5,7 +5,7 @@ namespace OrdersMS.src.Contracts.Domain.Entities
 {
     public class InsurancePolicy(PolicyId id, PolicyType type, PolicyCoverageKm coverageKm, PolicyIncidentCoverageAmount coverageAmount, PriceExtraKm pricePerExtraKm) : Entity<PolicyId>(id)
     {
-        private PolicyId policyId = id;
+        private PolicyId _id = id;
         private PolicyType _type = type;
         private PolicyCoverageKm _coverageKm = coverageKm;
         private PolicyIncidentCoverageAmount _coverageAmount = coverageAmount;

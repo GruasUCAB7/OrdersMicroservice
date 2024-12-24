@@ -75,7 +75,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
                 var handler = new GetAllPoliciesQueryHandler(_policyRepo);
                 var result = await handler.Execute(query);
 
-                _logger.Log("List of policies: {PoliciyIds}", string.Join(", ", result.Unwrap().Select(c => c.Id)));
+                _logger.Log("List of policies: {PolicyIds}", string.Join(", ", result.Unwrap().Select(c => c.Id)));
                 return StatusCode(200, result.Unwrap());
             }
             catch (Exception ex)
