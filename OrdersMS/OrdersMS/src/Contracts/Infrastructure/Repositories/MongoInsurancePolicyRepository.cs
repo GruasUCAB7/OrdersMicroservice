@@ -132,5 +132,16 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 
             return Result<InsurancePolicy>.Success(policy);
         }
+
+        public async Task<bool> IsActivePolicy(string id)
+        {
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("_id", id),
+                Builders<BsonDocument>.Filter.Eq("isActive", true)
+            );
+
+            var policy = await _policyCollection.Find(filter).FirstOrDefaultAsync();
+            return policy != null;
+        }
     }
 }

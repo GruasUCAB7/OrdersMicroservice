@@ -151,5 +151,16 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 
             return Result<InsuredVehicle>.Success(vehicle);
         }
+
+        public async Task<bool> IsActiveVehicle(string id)
+        {
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("_id", id),
+                Builders<BsonDocument>.Filter.Eq("isActive", true)
+            );
+
+            var vehicle = await _vehicleCollection.Find(filter).FirstOrDefaultAsync();
+            return vehicle != null;
+        }
     }
 }

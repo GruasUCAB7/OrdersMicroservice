@@ -12,13 +12,13 @@ namespace OrdersMS.src.Contracts.Application.Queries.GetPolicyById
         private readonly IPolicyRepository _policyRepository = policyRepository;
         public async Task<Result<GetPolicyResponse>> Execute(GetPolicyByIdQuery data)
         {
-            var vehicleOptional = await _policyRepository.GetById(data.Id);
-            if (!vehicleOptional.HasValue)
+            var policyOptional = await _policyRepository.GetById(data.Id);
+            if (!policyOptional.HasValue)
             {
                 return Result<GetPolicyResponse>.Failure(new PolicyNotFoundException());
             }
 
-            var policy = vehicleOptional.Unwrap();
+            var policy = policyOptional.Unwrap();
             var response = new GetPolicyResponse(
                 policy.GetId(),
                 policy.GetPolicyType(),
