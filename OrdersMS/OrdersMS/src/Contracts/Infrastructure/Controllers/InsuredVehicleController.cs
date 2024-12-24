@@ -15,7 +15,7 @@ using OrdersMS.src.Contracts.Application.Types;
 
 namespace OrdersMS.src.Contracts.Infrastructure.Controllers
 {
-    [Route("vehicle")]
+    [Route("orders/vehicle")]
     [ApiController]
     public class InsuredVehicleController(
         IInsuredVehicleRepository vehicleRepo,
