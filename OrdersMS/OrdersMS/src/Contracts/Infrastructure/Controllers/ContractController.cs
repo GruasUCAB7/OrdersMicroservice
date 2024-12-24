@@ -15,7 +15,7 @@ using OrdersMS.src.Contracts.Application.Types;
 
 namespace OrdersMS.src.Contracts.Infrastructure.Controllers
 {
-    [Route("orders/contract")]
+    [Route("order/contract")]
     [ApiController]
     public class ContractController(
         IContractRepository contractRepo,
