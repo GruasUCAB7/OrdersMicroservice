@@ -11,7 +11,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
         {
             if (string.IsNullOrWhiteSpace(name) || name.Length < 2)
             {
-                throw new InvalidExtraCostNameException();
+                throw new InvalidExtraCostNameException(name);
             }
             Name = name;
         }

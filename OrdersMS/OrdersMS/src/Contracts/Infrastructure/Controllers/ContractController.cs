@@ -39,7 +39,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         {
             try
             {
-                var command = new CreateContractCommand(data.AssociatedPolicy, data.InsuredVehicle, data.Status);
+                var command = new CreateContractCommand(data.AssociatedPolicy, data.InsuredVehicle);
 
                 var validate = _validatorCreate.Validate(command);
                 if (!validate.IsValid)

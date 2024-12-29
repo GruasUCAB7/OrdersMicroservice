@@ -98,9 +98,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 IsActive = vehicle.GetIsActive(),
                 ClientDNI = vehicle.GetClientDNI(),
                 ClientName = vehicle.GetClientName(),
-                ClientEmail = vehicle.GetClientEmail(),
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
+                ClientEmail = vehicle.GetClientEmail()
             };
 
             var bsonDocument = new BsonDocument
@@ -114,9 +112,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 {"isActive", mongoVehicle.IsActive},
                 {"clientDNI", mongoVehicle.ClientDNI},
                 {"clientName", mongoVehicle.ClientName},
-                {"clientEmail", mongoVehicle.ClientEmail},
-                {"createdDate", mongoVehicle.CreatedDate},
-                {"updatedDate", mongoVehicle.UpdatedDate}
+                {"clientEmail", mongoVehicle.ClientEmail}
             };
 
             await _vehicleCollection.InsertOneAsync(bsonDocument);

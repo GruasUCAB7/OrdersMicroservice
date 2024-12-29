@@ -2,6 +2,6 @@
 {
     public class PolicyNotAvailableException : ApplicationException
     {
-        public PolicyNotAvailableException() : base("Policy not available") { }
+        public PolicyNotAvailableException() : base("Policy is not active") { }
     }
 }

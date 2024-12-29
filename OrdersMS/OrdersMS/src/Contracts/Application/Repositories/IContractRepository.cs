@@ -12,5 +12,7 @@ namespace OrdersMS.src.Contracts.Application.Repositories
         Task<Result<Contract>> Save(Contract contract);
         Task<Result<Contract>> Update(Contract contract);
         Task<bool> ContractExists(string policyId, string vehicleId);
+        Task<bool> IsActiveContract(string id);
+        Task<bool> IsContractNumberExists(int contractNumber);
     }
 }
