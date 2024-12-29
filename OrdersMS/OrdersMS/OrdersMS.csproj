@@ -10,7 +10,11 @@
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
 		<PackageReference Include="FluentValidation" Version="11.11.0" />
+		<PackageReference Include="GoogleMaps.LocationServices" Version="1.2.0.5" />
+		<PackageReference Include="MassTransit" Version="8.3.4" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
 		<PackageReference Include="MongoDB.Driver" Version="3.0.0" />
+		<PackageReference Include="RestSharp" Version="112.1.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
 	</ItemGroup>
 

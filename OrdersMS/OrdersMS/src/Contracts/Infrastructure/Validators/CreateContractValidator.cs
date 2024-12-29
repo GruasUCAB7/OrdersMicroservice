@@ -12,9 +12,6 @@ namespace OrdersMS.src.Contracts.Infrastructure.Validators
 
             RuleFor(x => x.InsuredVehicle)
             .NotEmpty().WithMessage("Vehicle ID is required.");
-
-            RuleFor(x => x.Status)
-            .NotEmpty().WithMessage("Status is required.");
         }
     }
 }

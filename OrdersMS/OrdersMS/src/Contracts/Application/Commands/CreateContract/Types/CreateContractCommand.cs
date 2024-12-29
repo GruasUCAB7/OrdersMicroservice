@@ -2,7 +2,6 @@
 {
     public record CreateContractCommand(
         string AssociatedPolicy,
-        string InsuredVehicle,
-        string Status
+        string InsuredVehicle
     );
 }

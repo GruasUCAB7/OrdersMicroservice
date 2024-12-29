@@ -23,11 +23,5 @@ namespace OrdersMS.src.Contracts.Infrastructure.Models
 
         [BsonElement("isActive")]
         public required bool IsActive { get; set; }
-
-        [BsonElement("createdDate")]
-        public required DateTime CreatedDate { get; set; }
-
-        [BsonElement("updatedDate")]
-        public required DateTime UpdatedDate { get; set; }
     }
 }

@@ -2,10 +2,7 @@
 
 namespace OrdersMS.src.Orders.Domain.Exceptions
 {
-    public class InvalidExtraCostNameException : DomainException
+    public class InvalidExtraCostNameException(string name) : DomainException($"Invalid extra cost name: {name}")
     {
-        public InvalidExtraCostNameException() : base("Invalid extra cost name")
-        {
-        }
     }
 }

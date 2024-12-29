@@ -53,11 +53,17 @@ namespace OrdersMS.src.Contracts.Application.Commands.CreateContract
             }
 
             var id = _idGenerator.Generate();
+            int contractNumber;
+            do
+            {
+                contractNumber = new Random().Next(1000, 10000);
+            } while (await _contractRepository.IsContractNumberExists(contractNumber));
+
             var contract = Contract.CreateContract(
                 new ContractId(id),
+                new ContractNumber(contractNumber),
                 new PolicyId(data.AssociatedPolicy),
-                new VehicleId(data.InsuredVehicle),
-                new ContractStatus(data.Status)
+                new VehicleId(data.InsuredVehicle)
             );
             await _contractRepository.Save(contract);
 

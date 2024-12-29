@@ -87,9 +87,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 CoverageKm = policy.GetPolicyCoverageKm(),
                 CoverageAmount = Math.Round(policy.GetPolicyIncidentCoverageAmount(), 2),
                 PriceExtraKm = Math.Round(policy.GetPriceExtraKm(), 2),
-                IsActive = policy.GetIsActive(),
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
+                IsActive = policy.GetIsActive()
             };
 
             var bsonDocument = new BsonDocument
@@ -99,9 +97,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 {"coverageKm", mongoPolicy.CoverageKm},
                 {"coverageAmount", mongoPolicy.CoverageAmount},
                 {"priceExtraKm", mongoPolicy.PriceExtraKm},
-                {"isActive", mongoPolicy.IsActive},
-                {"createdDate", mongoPolicy.CreatedDate},
-                {"updatedDate", mongoPolicy.UpdatedDate}
+                {"isActive", mongoPolicy.IsActive}
             };
 
             await _policyCollection.InsertOneAsync(bsonDocument);

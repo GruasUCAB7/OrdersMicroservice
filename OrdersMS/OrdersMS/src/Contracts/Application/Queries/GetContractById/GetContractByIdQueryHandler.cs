@@ -21,6 +21,7 @@ namespace OrdersMS.src.Contracts.Application.Queries.GetContractById
             var contract = vehicleOptional.Unwrap();
             var response = new GetContractResponse(
                 contract.GetId(),
+                contract.GetContractNumber(),
                 contract.GetPolicyId(),
                 contract.GetVehicleId(),
                 contract.GetStartDate(),

@@ -1,9 +1,11 @@
 using DotNetEnv;
 using FluentValidation;
 using Microsoft.OpenApi.Models;
+using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
 using OrdersMS.Core.Infrastructure.Data;
+using OrdersMS.Core.Infrastructure.GoogleMaps;
 using OrdersMS.Core.Infrastructure.Logger;
 using OrdersMS.Core.Infrastructure.UUID;
 using OrdersMS.src.Contracts.Application.Commands.CreateContract.Types;
@@ -15,11 +17,12 @@ using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredVehicle.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Validators;
-using OrdersMS.src.Orders.Application.Commands.CreateExtraCost.Types;
-using OrdersMS.src.Orders.Application.Commands.UpdateExtraCost.Types;
+using OrdersMS.src.Orders.Application.Commands.AddExtraCost.Types;
+using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Validators;
+using RestSharp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,14 +37,16 @@ builder.Services.AddTransient<IValidator<CreatePolicyCommand>, CreatePolicyValid
 builder.Services.AddTransient<IValidator<UpdatePolicyCommand>, UpdatePolicyValidator>();
 builder.Services.AddTransient<IValidator<CreateContractCommand>, CreateContractValidator>();
 builder.Services.AddTransient<IValidator<UpdateContractCommand>, UpdateContractValidator>();
-builder.Services.AddTransient<IValidator<CreateExtraCostCommand>, CreateExtraCostValidator>();
-builder.Services.AddTransient<IValidator<UpdateExtraCostCommand>, UpdateExtraCostValidator>();
+builder.Services.AddTransient<IValidator<CreateOrderCommand>, CreateOrderValidator>();
+builder.Services.AddTransient<IValidator<AddExtraCostCommand>, AddExtraCostValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
 builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IContractRepository, MongoContractRepository>();
-builder.Services.AddScoped<IExtraCostRepository, MongoExtraCostRepository>();
+builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
+builder.Services.AddScoped<IGoogleApiService, GoogleApiService>();
+builder.Services.AddScoped<IRestClient, RestClient>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo

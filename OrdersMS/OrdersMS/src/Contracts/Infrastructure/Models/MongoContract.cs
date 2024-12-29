@@ -9,6 +9,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Models
         [BsonElement("id"), BsonRepresentation(BsonType.ObjectId)]
         public required string Id { get; set; }
 
+        [BsonElement("contractNumber")]
+        public required int ContractNumber { get; set; }
+
         [BsonElement("associatedPolicy")]
         public required string AssociatedPolicy { get; set; }
 

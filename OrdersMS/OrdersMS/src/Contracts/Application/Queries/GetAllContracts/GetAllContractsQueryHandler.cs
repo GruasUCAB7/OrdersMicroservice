@@ -20,6 +20,7 @@ namespace OrdersMS.src.Contracts.Application.Queries.GetAllContracts
 
             var response = contract.Select(contract => new GetContractResponse(
                 contract.GetId(),
+                contract.GetContractNumber(),
                 contract.GetPolicyId(),
                 contract.GetVehicleId(),
                 contract.GetStartDate(),

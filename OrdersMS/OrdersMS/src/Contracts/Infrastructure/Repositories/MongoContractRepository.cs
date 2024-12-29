@@ -37,9 +37,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 var contract = Contract.CreateContract
                 (
                     new ContractId(c.GetValue("_id").AsString),
+                    new ContractNumber(c.GetValue("contractNumber").AsInt32),
                     new PolicyId(c.GetValue("associatedPolicy").AsString),
-                    new VehicleId(c.GetValue("insuredVehicle").AsString),
-                    new ContractStatus(c.GetValue("status").AsString)
+                    new VehicleId(c.GetValue("insuredVehicle").AsString)
                 );
 
                 return contract;
@@ -60,9 +60,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 
             var contract = Contract.CreateContract(
                 new ContractId(contractDocument.GetValue("_id").AsString),
+                new ContractNumber(contractDocument.GetValue("contractNumber").AsInt32),
                 new PolicyId(contractDocument.GetValue("associatedPolicy").AsString),
-                new VehicleId(contractDocument.GetValue("insuredVehicle").AsString),
-                new ContractStatus(contractDocument.GetValue("status").AsString)
+                new VehicleId(contractDocument.GetValue("insuredVehicle").AsString)
             );
 
             return Core.Utils.Optional.Optional<Contract>.Of(contract);
@@ -73,6 +73,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             var mongoContract = new MongoContract
             {
                 Id = contract.GetId(),
+                ContractNumber = contract.GetContractNumber(),
                 AssociatedPolicy= contract.GetPolicyId(),
                 InsuredVehicle = contract.GetVehicleId(),
                 StartDate = contract.GetStartDate(),
@@ -85,6 +86,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             var bsonDocument = new BsonDocument
             {
                 {"_id", mongoContract.Id},
+                {"contractNumber", mongoContract.ContractNumber},
                 {"associatedPolicy", mongoContract.AssociatedPolicy},
                 {"insuredVehicle", mongoContract.InsuredVehicle},
                 {"startDate", mongoContract.StartDate},
@@ -98,9 +100,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 
             var savedContract = Contract.CreateContract(
                 new ContractId(mongoContract.Id),
+                new ContractNumber(mongoContract.ContractNumber),
                 new PolicyId(mongoContract.AssociatedPolicy),
-                new VehicleId(mongoContract.InsuredVehicle),
-                new ContractStatus(mongoContract.Status)
+                new VehicleId(mongoContract.InsuredVehicle)
             );
 
             return Result<Contract>.Success(savedContract);
@@ -131,6 +133,26 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 
             var contract = await _contractCollection.Find(filter).FirstOrDefaultAsync();
             return contract != null;
+        }
+
+        public async Task<bool> IsActiveContract(string id)
+        {
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("_id", id),
+                Builders<BsonDocument>.Filter.Eq("status", "Activo")
+            );
+
+            var contract = await _contractCollection.Find(filter).FirstOrDefaultAsync();
+            return contract != null;
+        }
+
+        public async Task<bool> IsContractNumberExists(int contractNumber)
+        {
+            var filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq("contractNumber", contractNumber));
+
+            var numberExist = await _contractCollection.Find(filter).FirstOrDefaultAsync();
+            return numberExist != null;
         }
     }
 }
