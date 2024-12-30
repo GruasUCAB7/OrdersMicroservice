@@ -38,19 +38,5 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
         {
             return Latitude == other.Latitude && Longitude == other.Longitude;
         }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is Coordinates other)
-            {
-                return Equals(other);
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Latitude, Longitude);
-        }
     }
 }
