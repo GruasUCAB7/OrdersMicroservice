@@ -14,5 +14,6 @@ namespace OrdersMS.src.Contracts.Application.Repositories
         Task<bool> ContractExists(string policyId, string vehicleId);
         Task<bool> IsActiveContract(string id);
         Task<bool> IsContractNumberExists(int contractNumber);
+        Task<string> GetContractIdByContractNumber(int contractNumber);
     }
 }

@@ -154,5 +154,23 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             var numberExist = await _contractCollection.Find(filter).FirstOrDefaultAsync();
             return numberExist != null;
         }
+
+        public async Task<string> GetContractIdByContractNumber(int contractNumber)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("contractNumber", contractNumber);
+            var projection = Builders<BsonDocument>.Projection.Include("_id");
+
+            var contractDocument = await _contractCollection
+                .Find(filter)
+                .Project(projection)
+                .FirstOrDefaultAsync();
+
+            if (contractDocument == null)
+            {
+                throw new Exception("Contract not found");
+            }
+
+            return contractDocument["_id"].AsString;
+        }
     }
 }

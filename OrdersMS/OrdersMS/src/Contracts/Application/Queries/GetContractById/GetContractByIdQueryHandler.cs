@@ -12,13 +12,13 @@ namespace OrdersMS.src.Contracts.Application.Queries.GetContractById
         private readonly IContractRepository _contractRepository = contractRepository;
         public async Task<Result<GetContractResponse>> Execute(GetContractByIdQuery data)
         {
-            var vehicleOptional = await _contractRepository.GetById(data.Id);
-            if (!vehicleOptional.HasValue)
+            var contractOptional = await _contractRepository.GetById(data.Id);
+            if (!contractOptional.HasValue)
             {
                 return Result<GetContractResponse>.Failure(new ContractNotFoundException());
             }
 
-            var contract = vehicleOptional.Unwrap();
+            var contract = contractOptional.Unwrap();
             var response = new GetContractResponse(
                 contract.GetId(),
                 contract.GetContractNumber(),

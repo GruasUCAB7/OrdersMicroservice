@@ -10,6 +10,8 @@ using OrdersMS.src.Contracts.Application.Queries.GetAllContracts;
 using OrdersMS.src.Contracts.Application.Queries.GetAllContracts.Types;
 using OrdersMS.src.Contracts.Application.Queries.GetContractById;
 using OrdersMS.src.Contracts.Application.Queries.GetContractById.Types;
+using OrdersMS.src.Contracts.Application.Queries.GetContractId;
+using OrdersMS.src.Contracts.Application.Queries.GetContractId.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Application.Types;
 
@@ -143,6 +145,28 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
             {
                 _logger.Exception("An error occurred while updating the contract.", ex.Message);
                 return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("contractNumber")]
+        public async Task<IActionResult> GetContractIdByContractNumber([FromQuery] int contractNumber)
+        {
+            try
+            {
+                var query = new GetContractIdQuery(contractNumber);
+                var handler = new GetContractIdQueryHandler(_contractRepo);
+                var result = await handler.Execute(query);
+
+                var contract = result.Unwrap();
+
+                _logger.Log("Contract found");
+                return StatusCode(200, contract);
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("Failed to get contract by contract number:", ex.Message);
+                return StatusCode(500, "Contract not found");
+
             }
         }
     }
