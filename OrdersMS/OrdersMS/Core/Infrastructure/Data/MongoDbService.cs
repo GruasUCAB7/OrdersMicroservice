@@ -5,50 +5,58 @@ namespace OrdersMS.Core.Infrastructure.Data
 {
     public class MongoDbService
     {
-        private readonly IMongoDatabase _database;
+        private readonly IMongoDatabase _databaseGruas;
+        private readonly IMongoDatabase _databaseMassTransit;
 
         public MongoDbService()
         {
             var connectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
-            var databaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME");
+            var databaseNameGruas = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME_GRUAS_UCAB");
+            var databaseNameMassTransit = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME_MASSTRANSIT");
 
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentNullException(nameof(connectionString), "MongoDB connection string cannot be null or empty.");
             }
 
-            if (string.IsNullOrEmpty(databaseName))
+            if (string.IsNullOrEmpty(databaseNameGruas))
             {
-                throw new ArgumentNullException(nameof(databaseName), "MongoDB database name cannot be null or empty.");
+                throw new ArgumentNullException(nameof(databaseNameGruas), "MongoDB database name cannot be null or empty.");
             }
 
             var mongoClient = new MongoClient(connectionString);
-            _database = mongoClient.GetDatabase(databaseName);
+            _databaseGruas = mongoClient.GetDatabase(databaseNameGruas);
+            _databaseMassTransit = mongoClient.GetDatabase(databaseNameMassTransit);
         }
 
         public IMongoCollection<BsonDocument> GetOrderCollection()
         {
-            return _database.GetCollection<BsonDocument>("order");
+            return _databaseGruas.GetCollection<BsonDocument>("order");
         }
 
         public IMongoCollection<BsonDocument> GetInsuredVehicleCollection()
         {
-            return _database.GetCollection<BsonDocument>("insuredVehicle");
+            return _databaseGruas.GetCollection<BsonDocument>("insuredVehicle");
         }
 
         public IMongoCollection<BsonDocument> GetInsurancePolicyCollection()
         {
-            return _database.GetCollection<BsonDocument>("insurancePolicy");
+            return _databaseGruas.GetCollection<BsonDocument>("insurancePolicy");
         }
 
         public IMongoCollection<BsonDocument> GetContractCollection()
         {
-            return _database.GetCollection<BsonDocument>("contract");
+            return _databaseGruas.GetCollection<BsonDocument>("contract");
         }
 
         public IMongoCollection<BsonDocument> GetExtraCostCollection()
         {
-            return _database.GetCollection<BsonDocument>("extraCost");
+            return _databaseGruas.GetCollection<BsonDocument>("extraCost");
+        }
+
+        public IMongoCollection<BsonDocument> GeMassTransitCollection()
+        {
+            return _databaseMassTransit.GetCollection<BsonDocument>("massTransit");
         }
     }
 }
