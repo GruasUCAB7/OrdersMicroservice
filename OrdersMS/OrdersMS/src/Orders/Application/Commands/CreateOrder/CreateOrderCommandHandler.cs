@@ -1,4 +1,5 @@
-﻿using OrdersMS.Core.Application.GoogleApiService;
+﻿using MassTransit;
+using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Services;
 using OrdersMS.Core.Utils.Result;
@@ -18,13 +19,15 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
     IOrderRepository orderRepository,
     IContractRepository contractRepository,
     IdGenerator<string> idGenerator,
-    IGoogleApiService googleApiService
+    IGoogleApiService googleApiService,
+    IPublishEndpoint publishEndpoint
 ) : IService<CreateOrderCommand, CreateOrderResponse>
     {
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IContractRepository _contractRepository = contractRepository;
         private readonly IdGenerator<string> _idGenerator = idGenerator;
         private readonly IGoogleApiService _googleApiService = googleApiService;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         public async Task<Result<CreateOrderResponse>> Execute(CreateOrderCommand data)
         {
@@ -55,7 +58,7 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
             var order = Order.CreateOrder(
                 new OrderId(id),
                 new ContractId(data.ContractId),
-                data.DriverAssigned != null ? new DriverId(data.DriverAssigned) : null,
+                new DriverId("null"),
                 new Coordinates(incidentCoordinatesResult.Latitude, incidentCoordinatesResult.Longitude),
                 new Coordinates(destinationCoordinatesResult.Latitude, destinationCoordinatesResult.Longitude),
                 new List<ExtraCost>()

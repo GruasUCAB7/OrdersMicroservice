@@ -1,19 +1,27 @@
 ﻿using FluentValidation;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
+using OrdersMS.src.Contracts.Application.Commands.UpdateContract.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Orders.Application.Commands.AddExtraCost;
 using OrdersMS.src.Orders.Application.Commands.AddExtraCost.Types;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned;
+using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus;
+using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus.Types;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders.Types;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
+using OrdersMS.src.Orders.Infrastructure.Validators;
+using RestSharp;
 
 namespace OrdersMS.src.Orders.Infrastructure.Controller
 {
@@ -25,7 +33,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         IdGenerator<string> idGenerator,
         IValidator<CreateOrderCommand> validatorCreate,
         IValidator<AddExtraCostCommand> validatorAddExtraCost,
+        IValidator<UpdateDriverAssignedCommand> validatorDriverAssigned,
+        IValidator<UpdateOrderStatusCommand> validatorOrderStatus,
         IGoogleApiService googleApiService,
+        IPublishEndpoint publishEndpoint,
+        IRestClient restClient,
         ILoggerContract logger) : ControllerBase
     {
         private readonly IOrderRepository _orderRepo = orderRepo;
@@ -33,7 +45,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly IdGenerator<string> _idGenerator = idGenerator;
         private readonly IValidator<CreateOrderCommand> _validatorCreate = validatorCreate;
         private readonly IValidator<AddExtraCostCommand> _validatorAddExtraCost = validatorAddExtraCost;
+        private readonly IValidator<UpdateDriverAssignedCommand> _validatorDriverAssigned = validatorDriverAssigned;
+        private readonly IValidator<UpdateOrderStatusCommand> _validatorOrderStatus = validatorOrderStatus; 
         private readonly IGoogleApiService _googleApiService = googleApiService;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IRestClient _restClient = restClient;
         private readonly ILoggerContract _logger = logger;
 
         [HttpPost]
@@ -51,7 +67,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     return StatusCode(400, errors);
                 }
 
-                var handler = new CreateOrderCommandHandler(_orderRepo, _contractRepo, _idGenerator, _googleApiService);
+                var handler = new CreateOrderCommandHandler(_orderRepo, _contractRepo, _idGenerator, _googleApiService, _publishEndpoint);
                 var result = await handler.Execute(command);
 
                 if (result.IsSuccessful)
@@ -112,7 +128,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             }
         }
 
-        [HttpPatch]
+        [HttpPatch("updateExtraCost")]
         public async Task<IActionResult> UpdateExtraCost([FromBody] AddExtraCostCommand data)
         {
             try
@@ -144,6 +160,76 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             catch (Exception ex)
             {
                 _logger.Exception("An error occurred while updating the extra cost for Order ID: {OrderId}.", data.OrderId, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("{orderId}/updateDriverAssigned")]
+        public async Task<IActionResult> UpdateDriverAssigned([FromBody] UpdateDriverAssignedCommand data, string orderId)
+        {
+            try
+            {
+                var command = new UpdateDriverAssignedCommand(data.DriverAssigned);
+
+                var validate = _validatorDriverAssigned.Validate(command);
+                if (!validate.IsValid)
+                {
+                    var errors = validate.Errors.Select(e => e.ErrorMessage).ToList();
+                    _logger.Error($"Validation failed for UpdateDriverAssignedCommand: {string.Join(", ", errors)}");
+                    return StatusCode(400, errors);
+                }
+                var handler = new UpdateDriverAssignedCommandHandler(_orderRepo, _restClient);
+                var result = await handler.Execute((orderId, command));
+                if (result.IsSuccessful)
+                {
+                    var order = result.Unwrap();
+                    _logger.Log("Driver assigned of the order updated: {OrderId}", orderId);
+                    return Ok(order);
+                }
+                else
+                {
+                    _logger.Error("Failed to update driver assigned: {ErrorMessage}", result.ErrorMessage);
+                    return StatusCode(409, result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("An error occurred while updating the driver assigned for Order ID: {OrderId}.", orderId, ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("{orderId}/updateOrderStatus")]
+        public async Task<IActionResult> UpdatOrderStatus([FromBody] UpdateOrderStatusCommand data, string orderId)
+        {
+            try
+            {
+                var command = new UpdateOrderStatusCommand(data.Status);
+
+                var validate = _validatorOrderStatus.Validate(command);
+                if (!validate.IsValid)
+                {
+                    var errors = validate.Errors.Select(e => e.ErrorMessage).ToList();
+                    _logger.Error($"Validation failed for UpdateOrderStatusCommand: {string.Join(", ", errors)}");
+                    return StatusCode(400, errors);
+                }
+                var handler = new UpdateOrderStatusCommandHandler(_orderRepo);
+                var result = await handler.Execute((orderId, command));
+                if (result.IsSuccessful)
+                {
+                    var order = result.Unwrap();
+                    _logger.Log("Order status updated: {OrderId}", orderId);
+                    return Ok(order);
+                }
+                else
+                {
+                    _logger.Error("Failed to update order status: {ErrorMessage}", result.ErrorMessage);
+                    return StatusCode(409, result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("An error occurred while updating the status for Order ID: {OrderId}.", orderId, ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }

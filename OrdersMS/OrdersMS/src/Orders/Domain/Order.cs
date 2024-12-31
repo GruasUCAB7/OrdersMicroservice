@@ -11,14 +11,14 @@ namespace OrdersMS.src.Orders.Domain
     {
         private OrderId _id = id;
         private ContractId _contractId;
-        private DriverId _driverAssigned;
+        private DriverId? _driverAssigned;
         //private UserId _operatorAssigned;
         private Coordinates _incidentAddress;
         private Coordinates _destinationAddress;
         private DateOnly _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
         private List<ExtraCost> _extraServicesApplied;
         private TotalCost _totalCost = new TotalCost(0);
-        private OrderStatus _status = new OrderStatus("Por aceptar");
+        private OrderStatus _status = new OrderStatus("Por asignar");
 
         public string GetId() => _id.GetValue();
         public string GetContractId() => _contractId.GetValue();
@@ -34,19 +34,19 @@ namespace OrdersMS.src.Orders.Domain
         public double GetTotalCost() => _totalCost.GetValue();
         public string GetOrderStatus() => _status.GetValue();
         public void SetStatus(OrderStatus status) => _status = status;
+        public void SetDriverAssigned(DriverId driverId) => _driverAssigned = driverId;
         public void SetExtraServicesApplied(List<ExtraCost> extraCosts) => _extraServicesApplied = extraCosts;
 
         public static Order CreateOrder(
             OrderId Id, 
             ContractId ContractId,
-            DriverId DriverAssigned,
+            DriverId? DriverAssigned,
             Coordinates IncidentAddress,
             Coordinates DestinationAddress,
             List<ExtraCost> ExtraServicesApplied)
         {
             var order = new Order(Id);
             order.Apply(OrderCreated.CreateEvent(Id, ContractId, DriverAssigned, IncidentAddress, DestinationAddress, ExtraServicesApplied));
-            order.SetStatus(DriverAssigned != null ? new OrderStatus("Por aceptar") : new OrderStatus("Por asignar"));
             return order;
         }
 
@@ -80,7 +80,7 @@ namespace OrdersMS.src.Orders.Domain
 
         public override void ValidateState()
         {
-            if (_id == null || _driverAssigned == null ||  _contractId == null || _incidentAddress == null || _destinationAddress == null)
+            if (_id == null ||  _contractId == null || _incidentAddress == null || _destinationAddress == null)
             {
                 throw new InvalidOrderException();
             }

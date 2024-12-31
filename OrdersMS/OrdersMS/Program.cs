@@ -1,5 +1,6 @@
 using DotNetEnv;
 using FluentValidation;
+using MassTransit;
 using Microsoft.OpenApi.Models;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
@@ -19,6 +20,8 @@ using OrdersMS.src.Contracts.Infrastructure.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Validators;
 using OrdersMS.src.Orders.Application.Commands.AddExtraCost.Types;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Validators;
@@ -39,6 +42,8 @@ builder.Services.AddTransient<IValidator<CreateContractCommand>, CreateContractV
 builder.Services.AddTransient<IValidator<UpdateContractCommand>, UpdateContractValidator>();
 builder.Services.AddTransient<IValidator<CreateOrderCommand>, CreateOrderValidator>();
 builder.Services.AddTransient<IValidator<AddExtraCostCommand>, AddExtraCostValidator>();
+builder.Services.AddTransient<IValidator<UpdateDriverAssignedCommand>, UpdateDriverAssignedValidator>();
+builder.Services.AddTransient<IValidator<UpdateOrderStatusCommand>, UpdateOrderStatusValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
 builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IContractRepository, MongoContractRepository>();
@@ -46,7 +51,36 @@ builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddScoped<IGoogleApiService, GoogleApiService>();
-builder.Services.AddScoped<IRestClient, RestClient>();
+builder.Services.AddSingleton<IRestClient>(sp => new RestClient(new RestClientOptions
+{
+    BaseUrl = new Uri("https://localhost:4052")
+}));
+builder.Services.AddMassTransit(busConfiguration =>
+{
+    busConfiguration.SetKebabCaseEndpointNameFormatter();
+
+    busConfiguration.AddConsumers(typeof(Program).Assembly);
+
+    //busConfiguration.AddSagaStateMachine<SagaData, SagaDataImplementation>();
+
+    busConfiguration.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitMqUri = Environment.GetEnvironmentVariable("RABBITMQ");
+        var rabbitMqUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
+        var rabbitMqPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+
+        cfg.Host(new Uri(rabbitMqUri!), hst =>
+        {
+            hst.Username(rabbitMqUsername);
+            hst.Password(rabbitMqPassword);
+        });
+
+        cfg.UseInMemoryOutbox(context);
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo

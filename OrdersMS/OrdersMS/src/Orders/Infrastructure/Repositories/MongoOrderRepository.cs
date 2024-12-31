@@ -112,6 +112,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 ),
                 extraServicesApplied
             );
+            order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
             order.SetExtraServicesApplied(extraServicesApplied);
 
             return Core.Utils.Optional.Optional<Order>.Of(order);
@@ -181,27 +182,36 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             return Result<Order>.Success(savedOrder);
         }
 
-        //public async Task<Result<ExtraCost>> Update(ExtraCost extraCost)
-        //{
-        //    var filter = Builders<BsonDocument>.Filter.Eq("_id", extraCost.GetId());
-        //    var update = Builders<BsonDocument>.Update
-        //        .Set("isActive", extraCost.GetIsActive());
-
-        //    var updateResult = await _extraCostCollection.UpdateOneAsync(filter, update);
-
-        //    if (updateResult.ModifiedCount == 0)
-        //    {
-        //        return Result<ExtraCost>.Failure(new Exception("Failed to update extra cost"));
-        //    }
-
-        //    return Result<ExtraCost>.Success(extraCost);
-        //}
-
-
-
-        public Task<Result<Order>> Update(Order order)
+        public async Task<Result<Order>> UpdateDriverAssigned(Order order)
         {
-            throw new NotImplementedException();
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", order.GetId());
+            var update = Builders<BsonDocument>.Update
+                .Set("driverAssigned", order.GetDriverAssigned());
+
+            var updateResult = await _orderCollection.UpdateOneAsync(filter, update);
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                return Result<Order>.Failure(new Exception("Failed to update order"));
+            }
+
+            return Result<Order>.Success(order);
+        }
+
+        public async Task<Result<Order>> UpdateOrderStatus(Order order)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", order.GetId());
+            var update = Builders<BsonDocument>.Update
+                .Set("status", order.GetOrderStatus());
+
+            var updateResult = await _orderCollection.UpdateOneAsync(filter, update);
+
+            if (updateResult.ModifiedCount == 0)
+            {
+                return Result<Order>.Failure(new Exception("Failed to update order"));
+            }
+
+            return Result<Order>.Success(order);
         }
 
 
