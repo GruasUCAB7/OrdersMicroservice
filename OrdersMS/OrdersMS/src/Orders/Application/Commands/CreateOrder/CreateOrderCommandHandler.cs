@@ -59,9 +59,11 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
             var order = Order.CreateOrder(
                 new OrderId(id),
                 new ContractId(data.ContractId),
-                new DriverId("null"),
+                new UserId(data.OperatorId),
+                new DriverId("Por asignar"),
                 new Coordinates(incidentCoordinatesResult.Latitude, incidentCoordinatesResult.Longitude),
                 new Coordinates(destinationCoordinatesResult.Latitude, destinationCoordinatesResult.Longitude),
+                new IncidentType(data.IncidentType),
                 new List<ExtraCost>()
             );
 

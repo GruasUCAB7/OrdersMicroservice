@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
+using RestSharp;
+using System.Text.Json;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -31,7 +33,8 @@ using OrdersMS.src.Orders.Application.Queries.GetOrderById.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.Services;
-using RestSharp;
+using OrdersMS.src.Orders.Infrastructure.Types;
+
 
 namespace OrdersMS.src.Orders.Infrastructure.Controller
 {
@@ -83,7 +86,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
-                var command = new CreateOrderCommand(data.ContractId, data.DriverAssigned, data.IncidentAddress, data.DestinationAddress, data.ExtraServicesApplied);
+                var command = new CreateOrderCommand(data.ContractId, data.OperatorId, data.DriverAssigned, data.IncidentAddress, data.DestinationAddress, data.IncidentType, data.ExtraServicesApplied, data.tokenJWT);
 
                 var validate = _validatorCreate.Validate(command);
                 if (!validate.IsValid)
@@ -91,6 +94,14 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     var errors = validate.Errors.Select(e => e.ErrorMessage).ToList();
                     _logger.Error($"Validation failed for CreateOrderCommand: {string.Join(", ", errors)}");
                     return StatusCode(400, errors);
+                }
+
+                var operatorExist = new RestRequest($"https://localhost:4051/user/{data.OperatorId}", Method.Get);
+                operatorExist.AddHeader("Authorization", $"Bearer {data.tokenJWT}");
+                var response = await _restClient.ExecuteAsync(operatorExist); 
+                if (!response.IsSuccessful)
+                {
+                    throw new Exception($"Failed to get operator information. Content: {response.Content}");
                 }
 
                 var handler = new CreateOrderCommandHandler(_orderRepo, _contractRepo, _idGenerator, _googleApiService, _publishEndpoint);
@@ -196,6 +207,34 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
+                var driverExistsRequest = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverAssigned}", Method.Get);
+                var responseDriver1 = await _restClient.ExecuteAsync(driverExistsRequest);
+                if (!responseDriver1.IsSuccessful)
+                {
+                    throw new Exception($"Failed to get driver information. Content: {responseDriver1.Content}");
+                }
+
+                var driverIsAvailableRequest = new RestRequest("https://localhost:4052/provider/provider/availables", Method.Get);
+                var responseDriver2 = await _restClient.ExecuteAsync(driverIsAvailableRequest);
+                if (!responseDriver2.IsSuccessful)
+                {
+                    throw new Exception($"Failed to get driver availability. Content: {responseDriver2.Content}");
+                }
+
+                var driver1 = JsonSerializer.Deserialize<DriverResponse>(responseDriver1.Content ?? string.Empty);
+                var availableDrivers = JsonSerializer.Deserialize<List<AvailableDriverResponse>>(responseDriver2.Content ?? string.Empty);
+
+                var driver2 = availableDrivers?.FirstOrDefault(d => d.id == data.DriverAssigned);
+                if (driver2 == null)
+                {
+                    throw new Exception("Driver not available.");
+                }
+
+                if (driver1?.id != driver2.id)
+                {
+                    throw new Exception("Driver IDs do not match.");
+                }
+
                 var command = new UpdateDriverAssignedCommand(data.DriverAssigned);
 
                 var validate = _validatorDriverAssigned.Validate(command);
@@ -205,8 +244,19 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     _logger.Error($"Validation failed for UpdateDriverAssignedCommand: {string.Join(", ", errors)}");
                     return StatusCode(400, errors);
                 }
-                var handler = new UpdateDriverAssignedCommandHandler(_orderRepo, _restClient, _publishEndpoint);
+
+                var handler = new UpdateDriverAssignedCommandHandler(_orderRepo, _publishEndpoint);
                 var result = await handler.Execute((orderId, command));
+
+                var changeIsAvailableToFalseConductor = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverAssigned}", Method.Patch);
+                changeIsAvailableToFalseConductor.AddJsonBody(new { isAvailable = false });
+
+                var responsechangeIsAvailable = await _restClient.ExecuteAsync(changeIsAvailableToFalseConductor);
+                if (!responsechangeIsAvailable.IsSuccessful)
+                {
+                    throw new Exception($"Failed to update driver availability. Content: {responsechangeIsAvailable.Content}");
+                }
+
                 if (result.IsSuccessful)
                 {
                     var order = result.Unwrap();
@@ -231,7 +281,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
-                var command = new UpdateOrderStatusCommand(data.OrderAcceptedDriverResponse, data.OrderInProcessDriverResponse, data.OrderCanceledDriverResponse);
+                var command = new UpdateOrderStatusCommand(data.DriverId, data.OrderAcceptedDriverResponse, data.OrderInProcessDriverResponse, data.OrderCanceledDriverResponse);
 
                 var validate = _validatorOrderStatus.Validate(command);
                 if (!validate.IsValid)
@@ -242,6 +292,19 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 }
                 var handler = new UpdateOrderStatusCommandHandler(_orderRepo, _publishEndpoint);
                 var result = await handler.Execute((orderId, command));
+
+                if (data.OrderCanceledDriverResponse == true)
+                {
+                    var changeIsAvailableToTrueConductor = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverId}", Method.Patch);
+                    changeIsAvailableToTrueConductor.AddJsonBody(new { isAvailable = true });
+
+                    var responseDriver = await _restClient.ExecuteAsync(changeIsAvailableToTrueConductor);
+                    if (!responseDriver.IsSuccessful)
+                    {
+                        throw new Exception($"Failed to update driver availability. Content: {responseDriver.Content}");
+                    }
+                }
+
                 if (result.IsSuccessful)
                 {
                     var order = result.Unwrap();
@@ -277,6 +340,16 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 }
                 var handler = new UpdateOrderStatusToCompletedCommandHandler(_orderRepo, _publishEndpoint);
                 var result = await handler.Execute((orderId, command));
+
+                var changeIsAvailableToTrueConductor = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverAssigned}", Method.Patch);
+                changeIsAvailableToTrueConductor.AddJsonBody(new { isAvailable = true });
+
+                var responseDriver = await _restClient.ExecuteAsync(changeIsAvailableToTrueConductor);
+                if (!responseDriver.IsSuccessful)
+                {
+                    throw new Exception($"Failed to update driver availability. Content: {responseDriver.Content}");
+                }
+
                 if (result.IsSuccessful)
                 {
                     var order = result.Unwrap();
@@ -408,8 +481,24 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             {
                 var handler = new ChangeOrderStatusToAssignCommandHandler(_orderRepo);
                 var result = await handler.Execute();
-                if (result)
+
+                if (result.IsSuccessful)
                 {
+                    var modifiedOrders = result.Unwrap();
+
+                    foreach(var order in modifiedOrders)
+            {
+                        var driverId = order.GetDriverAssigned();
+                        var changeIsAvailableToTrueConductor = new RestRequest($"https://localhost:4052/provider/driver/{driverId}", Method.Patch);
+                        changeIsAvailableToTrueConductor.AddJsonBody(new { isAvailable = true });
+
+                        var responseDriver2 = await _restClient.ExecuteAsync(changeIsAvailableToTrueConductor);
+                        if (!responseDriver2.IsSuccessful)
+                        {
+                            throw new Exception($"Failed to update driver availability for driver ID: {driverId}. Content: {responseDriver2.Content}");
+                        }
+                    }
+
                     _logger.Log("Orders updated");
                     return Ok();
                 }

@@ -1,4 +1,4 @@
-﻿namespace OrdersMS.src.Orders.Application.Types
+﻿namespace OrdersMS.src.Orders.Infrastructure.Types
 {
     public class DriverResponse
     {

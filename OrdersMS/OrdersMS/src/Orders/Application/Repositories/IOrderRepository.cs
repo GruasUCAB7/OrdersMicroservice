@@ -14,6 +14,6 @@ namespace OrdersMS.src.Orders.Application.Repositories
         Task<Result<Order>> Save(Order order);
         Task<Result<Order>> Update(Order order);
         Task<Result<Order>> UpdateExtraCosts(OrderId orderId, List<ExtraCost> extraCosts);
-        Task ValidateUpdateTimeForStatusPorAceptar();
+        Task<List<Order>> ValidateUpdateTimeForStatusPorAceptar();
     }
 }

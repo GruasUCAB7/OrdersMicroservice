@@ -10,11 +10,17 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
             RuleFor(x => x.ContractId)
                 .NotEmpty().WithMessage("Contract ID is required.");
 
+            RuleFor(x => x.OperatorId)
+                .NotEmpty().WithMessage("Operator ID is required.");
+
             RuleFor(x => x.IncidentAddress)
                 .NotEmpty().WithMessage("Incident Address is required.");
 
             RuleFor(x => x.DestinationAddress)
                 .NotEmpty().WithMessage("Destination Address is required.");
+
+            RuleFor(x => x.IncidentType)
+                .NotEmpty().WithMessage("incident type is required.");
         }
     }
 }

@@ -20,18 +20,20 @@ namespace OrdersMS.src.Orders.Application.Queries.GetAllOrders
 
             var response = order.Select(order => new GetOrderResponse(
                 order.GetId(),
-               order.GetContractId(),
-               order.GetDriverAssigned(),
-               new CoordinatesDto(order.GetIncidentAddressLatitude(), order.GetIncidentAddressLongitude()),
-               new CoordinatesDto(order.GetDestinationAddressLatitude(), order.GetDestinationAddressLongitude()),
-               order.GetIncidentDate(),
-               order.GetExtrasServicesApplied().Select(extraCost => new ExtraServiceDto(
+                order.GetContractId(),
+                order.GetOperatorAssigned(),
+                order.GetDriverAssigned(),
+                new CoordinatesDto(order.GetIncidentAddressLatitude(), order.GetIncidentAddressLongitude()),
+                new CoordinatesDto(order.GetDestinationAddressLatitude(), order.GetDestinationAddressLongitude()),
+                order.GetIncidentType(),
+                order.GetIncidentDate(),
+                order.GetExtrasServicesApplied().Select(extraCost => new ExtraServiceDto(
                     extraCost.GetId(),
                     extraCost.GetName(),
                     extraCost.GetPrice()
-               )).ToList(),
-               order.GetTotalCost(),
-               order.GetOrderStatus()
+                )).ToList(),
+                order.GetTotalCost(),
+                order.GetOrderStatus()
             )).ToArray();
 
             return Result<GetOrderResponse[]>.Success(response);

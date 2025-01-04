@@ -7,7 +7,6 @@ using OrdersMS.src.Orders.Application.Exceptions;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.ValueObjects;
-using RestSharp;
 
 namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted
 {
@@ -31,16 +30,6 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted
             {
                 order.SetStatus(new OrderStatus("Finalizado"));
                 await _publishEndpoint.Publish(new OrderCompletedEvent(Guid.Parse(order.GetId())));
-
-                var client = new RestClient("https://localhost:4052");
-                var changeIsAvailableToTrueConductor = new RestRequest($"/provider/driver/{request.data.DriverAssigned}", Method.Patch);
-                changeIsAvailableToTrueConductor.AddJsonBody(new { isAvailable = true });
-
-                var responseDriver = await client.ExecuteAsync(changeIsAvailableToTrueConductor);
-                if (!responseDriver.IsSuccessful)
-                {
-                    return Result<GetOrderResponse>.Failure(new Exception("Failed to update driver availability"));
-                }
             }
 
             
@@ -59,9 +48,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted
             var response = new GetOrderResponse(
                 order.GetId(),
                 order.GetContractId(),
+                order.GetOperatorAssigned(),
                 order.GetDriverAssigned(),
                 new CoordinatesDto(order.GetIncidentAddressLatitude(), order.GetIncidentAddressLongitude()),
                 new CoordinatesDto(order.GetDestinationAddressLatitude(), order.GetDestinationAddressLongitude()),
+                order.GetIncidentType(),
                 order.GetIncidentDate(),
                 extraServices,
                 order.GetTotalCost(),

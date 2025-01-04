@@ -93,8 +93,8 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.UsingRabbitMq((context, cfg) =>
     {
         var rabbitMqUri = Environment.GetEnvironmentVariable("RABBITMQ");
-        var rabbitMqUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME") ?? "guest";
-        var rabbitMqPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD") ?? "guest";
+        var rabbitMqUsername = Environment.GetEnvironmentVariable("RABBITMQ_USERNAME");
+        var rabbitMqPassword = Environment.GetEnvironmentVariable("RABBITMQ_PASSWORD");
 
         cfg.Host(new Uri(rabbitMqUri!), hst =>
         {

@@ -12,9 +12,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Models
         [BsonElement("contractClient")]
         public required string ContractClient { get; set; }
 
-        //[BsonElement("createdByOperator")]
-        //public string CreatedByOperator { get; set; }
-
+        [BsonElement("createdByOperator")]
+        public required string CreatedByOperator { get; set; }
 
         [BsonElement("driverAssigned")]
         public required string DriverAssigned { get; set; }
@@ -24,6 +23,9 @@ namespace OrdersMS.src.Orders.Infrastructure.Models
 
         [BsonElement("destinationAddress")]
         public required MongoCoordinates DestinationAddress { get; set; }
+
+        [BsonElement("incidentType")]
+        public required string IncidentType { get; set; }
 
         [BsonElement("incidentDate")]
         public required string IncidentDate { get; set; }

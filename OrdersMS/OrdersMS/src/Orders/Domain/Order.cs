@@ -12,9 +12,10 @@ namespace OrdersMS.src.Orders.Domain
         private new OrderId _id = id;
         private ContractId _contractId;
         private DriverId _driverAssigned;
-        //private UserId _operatorAssigned; // este atributo deberia ser el operador logueado que cree la orden.
+        private UserId _operatorAssigned;
         private Coordinates _incidentAddress;
         private Coordinates _destinationAddress;
+        private IncidentType _incidentType;
         private DateOnly _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
         private List<ExtraCost> _extraServicesApplied = new List<ExtraCost>();
         private TotalCost _totalCost = new TotalCost(0);
@@ -22,9 +23,11 @@ namespace OrdersMS.src.Orders.Domain
 
         public string GetId() => _id.GetValue();
         public string GetContractId() => _contractId.GetValue();
+        public string GetOperatorAssigned() => _operatorAssigned.GetValue();
         public string GetDriverAssigned() => _driverAssigned.GetValue();
         public Coordinates GetIncidentAddress() => _incidentAddress;
         public Coordinates GetDestinationAddress() => _destinationAddress;
+        public string GetIncidentType() => _incidentType.GetValue();
         public double GetIncidentAddressLatitude() => _incidentAddress.GetLatitude();
         public double GetIncidentAddressLongitude() => _incidentAddress.GetLongitude();
         public double GetDestinationAddressLatitude() => _destinationAddress.GetLatitude();
@@ -41,13 +44,15 @@ namespace OrdersMS.src.Orders.Domain
         public static Order CreateOrder(
             OrderId Id, 
             ContractId ContractId,
+            UserId OperatorId,
             DriverId DriverAssigned,
             Coordinates IncidentAddress,
             Coordinates DestinationAddress,
+            IncidentType IncidentType,
             List<ExtraCost> ExtraServicesApplied)
         {
             var order = new Order(Id);
-            order.Apply(OrderCreated.CreateEvent(Id, ContractId, DriverAssigned, IncidentAddress, DestinationAddress, ExtraServicesApplied));
+            order.Apply(OrderCreated.CreateEvent(Id, ContractId, OperatorId, DriverAssigned, IncidentAddress, DestinationAddress, IncidentType, ExtraServicesApplied));
             return order;
         }
 
@@ -55,9 +60,11 @@ namespace OrdersMS.src.Orders.Domain
         {
             _id = new OrderId(context.Id);
             _contractId = new ContractId(context.ContractId);
+            _operatorAssigned = new UserId(context.OperatorId);
             _driverAssigned = new DriverId(context.DriverId);
             _incidentAddress = new Coordinates(context.IncidentAddress.Latitude, context.IncidentAddress.Longitude);
             _destinationAddress = new Coordinates(context.DestinationAddress.Latitude, context.DestinationAddress.Longitude);
+            _incidentType = new IncidentType(context.IncidentType);
             _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
             _extraServicesApplied = new List<ExtraCost>();
         }
@@ -81,7 +88,7 @@ namespace OrdersMS.src.Orders.Domain
 
         public override void ValidateState()
         {
-            if (_id == null ||  _contractId == null || _incidentAddress == null || _destinationAddress == null)
+            if (_id == null ||  _contractId == null || _operatorAssigned == null || _incidentAddress == null || _destinationAddress == null || _incidentType == null)
             {
                 throw new InvalidOrderException();
             }

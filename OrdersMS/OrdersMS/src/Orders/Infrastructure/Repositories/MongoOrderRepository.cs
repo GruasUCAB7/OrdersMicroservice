@@ -62,6 +62,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 (
                     new OrderId(o.GetValue("_id").AsString),
                     new ContractId(o.GetValue("contractClient").AsString),
+                    new UserId(o.GetValue("createdByOperator").AsString),
                     new DriverId(o.GetValue("driverAssigned").AsString),
                     new Coordinates(
                         o.GetValue("incidentAddress").AsBsonDocument.GetValue("latitude").AsDouble,
@@ -71,6 +72,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                         o.GetValue("destinationAddress").AsBsonDocument.GetValue("latitude").AsDouble,
                         o.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
                     ),
+                    new IncidentType(o.GetValue("incidentType").AsString),
                     extraServicesApplied
                 );
                 order.SetStatus(new OrderStatus(o.GetValue("status").AsString));
@@ -102,6 +104,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             var order = Order.CreateOrder(
                 new OrderId(orderDocument.GetValue("_id").AsString),
                 new ContractId(orderDocument.GetValue("contractClient").AsString),
+                new UserId(orderDocument.GetValue("createdByOperator").AsString),
                 new DriverId(orderDocument.GetValue("driverAssigned").AsString),
                 new Coordinates(
                     orderDocument.GetValue("incidentAddress").AsBsonDocument.GetValue("latitude").AsDouble,
@@ -111,6 +114,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                     orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("latitude").AsDouble,
                     orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
                 ),
+                new IncidentType(orderDocument.GetValue("incidentType").AsString),
                 extraServicesApplied
             );
             order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
@@ -125,6 +129,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             {
                 Id = order.GetId(),
                 ContractClient = order.GetContractId(),
+                CreatedByOperator = order.GetOperatorAssigned(),
                 DriverAssigned = order.GetDriverAssigned(),
                 IncidentAddress = new MongoCoordinates
                 {
@@ -136,6 +141,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                     Latitude = order.GetDestinationAddressLatitude(),
                     Longitude = order.GetDestinationAddressLongitude()
                 },
+                IncidentType = order.GetIncidentType(),
                 IncidentDate = order.GetIncidentDate(),
                 ExtraServicesApplied = new List<MongoExtraServicesApplied>(),
                 TotalCost = order.GetTotalCost(),
@@ -148,6 +154,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             {
                 {"_id", mongoOrder.Id},
                 {"contractClient", mongoOrder.ContractClient},
+                {"createdByOperator", mongoOrder.CreatedByOperator},
                 {"driverAssigned", mongoOrder.DriverAssigned},
                 {"incidentAddress", new BsonDocument
                     {
@@ -161,6 +168,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                         {"longitude", mongoOrder.DestinationAddress.Longitude}
                     }
                 },
+                {"incidentType", mongoOrder.IncidentType},
                 {"incidentDate", mongoOrder.IncidentDate},
                 {"extraServicesApplied", new BsonArray()},
                 {"totalCost", mongoOrder.TotalCost},
@@ -174,9 +182,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             var savedOrder = Order.CreateOrder(
                 new OrderId(mongoOrder.Id),
                 new ContractId(mongoOrder.ContractClient),
+                new UserId(mongoOrder.CreatedByOperator),
                 new DriverId(mongoOrder.DriverAssigned),
                 new Coordinates(mongoOrder.IncidentAddress.Latitude, mongoOrder.IncidentAddress.Longitude),
                 new Coordinates(mongoOrder.DestinationAddress.Latitude, mongoOrder.DestinationAddress.Longitude),
+                new IncidentType(mongoOrder.IncidentType),
                 new List<ExtraCost>()
             );
 
@@ -253,23 +263,53 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             return Result<Order>.Success(updatedOrder);
         }
 
-        public async Task ValidateUpdateTimeForStatusPorAceptar()
+        public async Task<List<Order>> ValidateUpdateTimeForStatusPorAceptar()
         {
             var filter = Builders<BsonDocument>.Filter.Eq("status", "Por Aceptar");
             var orders = await _orderCollection.Find(filter).ToListAsync();
+            var modifiedOrders = new List<Order>();
 
             foreach (var orderDocument in orders)
             {
                 var updatedDate = orderDocument.GetValue("updatedDate").ToUniversalTime();
                 var timeDifference = DateTime.UtcNow - updatedDate;
 
-                if (timeDifference.TotalMinutes > 6)
+                if (timeDifference.TotalMinutes > 1)
                 {
                     var updateFilter = Builders<BsonDocument>.Filter.Eq("_id", orderDocument.GetValue("_id").AsString);
                     var update = Builders<BsonDocument>.Update.Set("status", "Por Asignar");
                     await _orderCollection.UpdateOneAsync(updateFilter, update);
+
+                    var extraServicesApplied = orderDocument["extraServicesApplied"].AsBsonArray
+                        .Select(extraService => new ExtraCost(
+                            new ExtraCostId(extraService["id"].AsString),
+                            new ExtraCostName(extraService["name"].AsString),
+                            new ExtraCostPrice(extraService["price"].AsDecimal)
+                        )).ToList();
+
+                    var order = Order.CreateOrder(
+                        new OrderId(orderDocument.GetValue("_id").AsString),
+                        new ContractId(orderDocument.GetValue("contractClient").AsString),
+                        new UserId(orderDocument.GetValue("createdByOperator").AsString),
+                        new DriverId(orderDocument.GetValue("driverAssigned").AsString),
+                        new Coordinates(
+                            orderDocument.GetValue("incidentAddress").AsBsonDocument.GetValue("latitude").AsDouble,
+                            orderDocument.GetValue("incidentAddress").AsBsonDocument.GetValue("longitude").AsDouble
+                        ),
+                        new Coordinates(
+                            orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("latitude").AsDouble,
+                            orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
+                        ),
+                        new IncidentType(orderDocument.GetValue("incidentType").AsString),
+                        extraServicesApplied
+                    );
+
+
+                    modifiedOrders.Add(order);
                 }
             }
+
+            return modifiedOrders;
         }
     }
 }
