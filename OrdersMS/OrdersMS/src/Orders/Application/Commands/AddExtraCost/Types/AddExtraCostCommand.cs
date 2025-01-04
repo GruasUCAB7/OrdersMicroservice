@@ -1,7 +1,6 @@
 ﻿namespace OrdersMS.src.Orders.Application.Commands.AddExtraCost.Types
 {
     public record AddExtraCostCommand(
-        string OrderId,
         List<ExtraCostDto> ExtraCosts
     );
 

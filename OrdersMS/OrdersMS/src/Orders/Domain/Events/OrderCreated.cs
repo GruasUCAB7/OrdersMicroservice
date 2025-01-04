@@ -9,7 +9,7 @@ namespace OrdersMS.src.Orders.Domain.Events
     public class OrderCreated(
         string id, 
         string contractId, 
-        string? driverId,
+        string driverId,
         Coordinates incidentAddress, 
         Coordinates destinationAddress,
         List<ExtraCost> extraServicesApplied
@@ -17,7 +17,7 @@ namespace OrdersMS.src.Orders.Domain.Events
     {
         public readonly string Id = id;
         public readonly string ContractId = contractId;
-        public readonly string? DriverId = driverId;
+        public readonly string DriverId = driverId;
         public readonly Coordinates IncidentAddress = incidentAddress;
         public readonly Coordinates DestinationAddress = destinationAddress;
         public readonly List<ExtraCost> ExtraServicesApplied = extraServicesApplied;
@@ -25,7 +25,7 @@ namespace OrdersMS.src.Orders.Domain.Events
         public static OrderCreatedEvent CreateEvent(
             OrderId Id,
             ContractId ContractId, 
-            DriverId? DriverId,
+            DriverId DriverId,
             Coordinates IncidentAddress, 
             Coordinates DestinationAddress,
             List<ExtraCost> ExtraServicesApplied)
@@ -36,7 +36,7 @@ namespace OrdersMS.src.Orders.Domain.Events
                 new OrderCreated(
                     Id.GetValue(),
                     ContractId.GetValue(),
-                    DriverId?.GetValue(),
+                    DriverId.GetValue(),
                     IncidentAddress,
                     DestinationAddress,
                     ExtraServicesApplied

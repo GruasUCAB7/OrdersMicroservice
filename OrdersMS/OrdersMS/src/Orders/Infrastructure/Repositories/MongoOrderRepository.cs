@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using OrdersMS.Core.Infrastructure.Data;
 using OrdersMS.Core.Utils.Result;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
+using OrdersMS.src.Orders.Application.Exceptions;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Domain;
@@ -182,38 +183,47 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             return Result<Order>.Success(savedOrder);
         }
 
-        public async Task<Result<Order>> UpdateDriverAssigned(Order order)
+        public async Task<Result<Order>> Update(Order order)
         {
             var filter = Builders<BsonDocument>.Filter.Eq("_id", order.GetId());
-            var update = Builders<BsonDocument>.Update
-                .Set("driverAssigned", order.GetDriverAssigned());
+
+            var existingOrderDocument = await _orderCollection.Find(filter).FirstOrDefaultAsync();
+            if (existingOrderDocument == null)
+            {
+                return Result<Order>.Failure(new Exception("Order not found"));
+            }
+
+            var updateDefinitionBuilder = Builders<BsonDocument>.Update;
+            var updateDefinitions = new List<UpdateDefinition<BsonDocument>>();
+
+            if (order.GetDriverAssigned() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("driverAssigned", order.GetDriverAssigned()));
+            }
+
+            if (order.GetOrderStatus() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("status", order.GetOrderStatus()));
+            }
+
+            if (order.GetTotalCost() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("totalCost", order.GetTotalCost()));
+            }
+
+            updateDefinitions.Add(updateDefinitionBuilder.Set("updatedDate", DateTime.UtcNow));
+
+            var update = updateDefinitionBuilder.Combine(updateDefinitions);
 
             var updateResult = await _orderCollection.UpdateOneAsync(filter, update);
 
             if (updateResult.ModifiedCount == 0)
             {
-                return Result<Order>.Failure(new Exception("Failed to update order"));
+                return Result<Order>.Failure(new OrderUpdateFailedException("Failed to update order"));
             }
 
             return Result<Order>.Success(order);
         }
-
-        public async Task<Result<Order>> UpdateOrderStatus(Order order)
-        {
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", order.GetId());
-            var update = Builders<BsonDocument>.Update
-                .Set("status", order.GetOrderStatus());
-
-            var updateResult = await _orderCollection.UpdateOneAsync(filter, update);
-
-            if (updateResult.ModifiedCount == 0)
-            {
-                return Result<Order>.Failure(new Exception("Failed to update order"));
-            }
-
-            return Result<Order>.Success(order);
-        }
-
 
         public async Task<Result<Order>> UpdateExtraCosts(OrderId orderId, List<ExtraCost> extraCosts)
         {
@@ -241,6 +251,25 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
 
             var updatedOrder = updatedOrderOptional.Unwrap();
             return Result<Order>.Success(updatedOrder);
+        }
+
+        public async Task ValidateUpdateTimeForStatusPorAceptar()
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("status", "Por Aceptar");
+            var orders = await _orderCollection.Find(filter).ToListAsync();
+
+            foreach (var orderDocument in orders)
+            {
+                var updatedDate = orderDocument.GetValue("updatedDate").ToUniversalTime();
+                var timeDifference = DateTime.UtcNow - updatedDate;
+
+                if (timeDifference.TotalMinutes > 6)
+                {
+                    var updateFilter = Builders<BsonDocument>.Filter.Eq("_id", orderDocument.GetValue("_id").AsString);
+                    var update = Builders<BsonDocument>.Update.Set("status", "Por Asignar");
+                    await _orderCollection.UpdateOneAsync(updateFilter, update);
+                }
+            }
         }
     }
 }

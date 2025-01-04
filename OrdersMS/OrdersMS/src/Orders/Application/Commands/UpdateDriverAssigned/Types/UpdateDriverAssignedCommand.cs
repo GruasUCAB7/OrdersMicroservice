@@ -3,5 +3,6 @@
     public record UpdateDriverAssignedCommand
     (
         string DriverAssigned
+        //bool IsAssignedAutomatic
     );
 }

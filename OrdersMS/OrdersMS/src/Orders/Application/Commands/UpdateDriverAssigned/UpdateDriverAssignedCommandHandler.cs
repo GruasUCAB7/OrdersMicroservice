@@ -1,20 +1,26 @@
-﻿using OrdersMS.Core.Application.Services;
+﻿using System.Text.Json;
+using RestSharp;
+using MassTransit;
+using OrdersMS.Core.Application.Services;
 using OrdersMS.Core.Utils.Result;
 using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
 using OrdersMS.src.Orders.Application.Exceptions;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.ValueObjects;
-using RestSharp;
-using System.Text.Json;
-
+using OrdersMS.src.Orders.Application.Events;
 
 namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
 {
-    public class UpdateDriverAssignedCommandHandler(IOrderRepository orderRepository, IRestClient restClient) : IService<(string orderId, UpdateDriverAssignedCommand data), GetOrderResponse>
+    public class UpdateDriverAssignedCommandHandler(
+        IOrderRepository orderRepository, 
+        IRestClient restClient,
+        IPublishEndpoint publishEndpoint
+    ) : IService<(string orderId, UpdateDriverAssignedCommand data), GetOrderResponse>
     {
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IRestClient _restClient = restClient;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
         public async Task<Result<GetOrderResponse>> Execute((string orderId, UpdateDriverAssignedCommand data) request)
         {
@@ -24,14 +30,14 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
                 return Result<GetOrderResponse>.Failure(new OrderNotFoundException());
             }
 
-            var driverExistsRequest = new RestRequest($"provider/driver/{request.data.DriverAssigned}", Method.Get);
+            var driverExistsRequest = new RestRequest($"https://localhost:4052/provider/driver/{request.data.DriverAssigned}", Method.Get);
             var responseDriver1 = await _restClient.ExecuteAsync(driverExistsRequest);
             if (!responseDriver1.IsSuccessful)
             {
                 throw new Exception($"Failed to get driver information. Content: {responseDriver1.Content}");
             }
 
-            var driverIsAvailableRequest = new RestRequest("provider/provider/availables", Method.Get);
+            var driverIsAvailableRequest = new RestRequest("https://localhost:4052/provider/provider/availables", Method.Get);
             var responseDriver2 = await _restClient.ExecuteAsync(driverIsAvailableRequest);
             if (!responseDriver2.IsSuccessful)
             {
@@ -60,11 +66,27 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
                 order.SetDriverAssigned(new DriverId(request.data.DriverAssigned));
             }
 
-            var updateResult = await _orderRepository.UpdateDriverAssigned(order);
+            order.SetStatus(new OrderStatus("Por Aceptar"));
+
+
+            var updateResult = await _orderRepository.Update(order);
             if (updateResult.IsFailure)
             {
                 return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The driver assigned of the order could not be updated correctly"));
             }
+
+            await _publishEndpoint.Publish(new DriverAssignedToOrderEvent(Guid.Parse(order.GetId())));
+
+
+            var changeIsAvailableToFalseConductor = new RestRequest($"https://localhost:4052/provider/driver/{request.data.DriverAssigned}", Method.Patch);
+            changeIsAvailableToFalseConductor.AddJsonBody(new { isAvailable = false });
+
+            var responsechangeIsAvailable = await _restClient.ExecuteAsync(changeIsAvailableToFalseConductor);
+            if (!responsechangeIsAvailable.IsSuccessful)
+            {
+                throw new Exception($"Failed to update driver availability. Content: {responsechangeIsAvailable.Content}");
+            }
+
 
             var extraServices = order.GetExtrasServicesApplied().Select(extraCost => new ExtraServiceDto(
                 extraCost.GetId(),

@@ -43,9 +43,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 (
                     new PolicyId(p.GetValue("_id").AsString),
                     new PolicyType(p.GetValue("policyType").AsString),
-                    new PolicyCoverageKm(p.GetValue("coverageKm").AsInt32),
-                    new PolicyIncidentCoverageAmount(Math.Round(p.GetValue("coverageAmount").AsDouble, 2)),
-                    new PriceExtraKm(Math.Round(p.GetValue("priceExtraKm").AsDouble, 2))
+                    new PolicyCoverageKm(p.GetValue("coverageKm").AsDecimal),
+                    new PolicyIncidentCoverageAmount(p.GetValue("coverageAmount").AsDecimal),
+                    new PriceExtraKm(p.GetValue("priceExtraKm").AsDecimal)
                 );
 
                 policy.SetIsActive(p.GetValue("isActive").AsBoolean);
@@ -68,9 +68,9 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             var policy = new InsurancePolicy(
                 new PolicyId(policyDocument.GetValue("_id").AsString),
                 new PolicyType(policyDocument.GetValue("policyType").AsString),
-                new PolicyCoverageKm(policyDocument.GetValue("coverageKm").AsInt32),
-                new PolicyIncidentCoverageAmount(Math.Round(policyDocument.GetValue("coverageAmount").AsDouble, 2)),
-                new PriceExtraKm(Math.Round(policyDocument.GetValue("priceExtraKm").AsDouble, 2))
+                new PolicyCoverageKm(policyDocument.GetValue("coverageKm").AsDecimal),
+                new PolicyIncidentCoverageAmount(policyDocument.GetValue("coverageAmount").AsDecimal),
+                new PriceExtraKm(policyDocument.GetValue("priceExtraKm").AsDecimal)
             );
 
             policy.SetIsActive(policyDocument.GetValue("isActive").AsBoolean);
@@ -113,7 +113,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             return Result<InsurancePolicy>.Success(savedPolicy);
         }
 
-        public async Task<Result<InsurancePolicy>> Update(InsurancePolicy policy)
+        public async Task<Result<InsurancePolicy>> Update(InsurancePolicy policy) //poner mas campos a actualizar
         {
             var filter = Builders<BsonDocument>.Filter.Eq("_id", policy.GetId());
             var update = Builders<BsonDocument>.Update

@@ -5,9 +5,9 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
 {
     public class PriceExtraKm : IValueObject<PriceExtraKm>
     {
-        private double Price { get; }
+        private decimal Price { get; }
 
-        public PriceExtraKm(double price)
+        public PriceExtraKm(decimal price)
         {
             if (price < 0 || price > 50)
             {
@@ -16,7 +16,7 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
             Price = price;
         }
 
-        public double GetValue()
+        public decimal GetValue()
         {
             return Price;
         }

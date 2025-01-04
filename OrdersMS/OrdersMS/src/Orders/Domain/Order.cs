@@ -9,16 +9,16 @@ namespace OrdersMS.src.Orders.Domain
 {
     public class Order(OrderId id) : AggregateRoot<OrderId>(id)
     {
-        private OrderId _id = id;
+        private new OrderId _id = id;
         private ContractId _contractId;
-        private DriverId? _driverAssigned;
-        //private UserId _operatorAssigned;
+        private DriverId _driverAssigned;
+        //private UserId _operatorAssigned; // este atributo deberia ser el operador logueado que cree la orden.
         private Coordinates _incidentAddress;
         private Coordinates _destinationAddress;
         private DateOnly _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        private List<ExtraCost> _extraServicesApplied;
+        private List<ExtraCost> _extraServicesApplied = new List<ExtraCost>();
         private TotalCost _totalCost = new TotalCost(0);
-        private OrderStatus _status = new OrderStatus("Por asignar");
+        private OrderStatus _status = new OrderStatus("Por Asignar");
 
         public string GetId() => _id.GetValue();
         public string GetContractId() => _contractId.GetValue();
@@ -31,16 +31,17 @@ namespace OrdersMS.src.Orders.Domain
         public double GetDestinationAddressLongitude() => _destinationAddress.GetLongitude();
         public string GetIncidentDate() => _incidentDate.ToString();
         public List<ExtraCost> GetExtrasServicesApplied() => _extraServicesApplied; 
-        public double GetTotalCost() => _totalCost.GetValue();
+        public decimal GetTotalCost() => _totalCost.GetValue();
         public string GetOrderStatus() => _status.GetValue();
         public void SetStatus(OrderStatus status) => _status = status;
+        public void SetTotalCost(TotalCost amount) => _totalCost = amount;
         public void SetDriverAssigned(DriverId driverId) => _driverAssigned = driverId;
         public void SetExtraServicesApplied(List<ExtraCost> extraCosts) => _extraServicesApplied = extraCosts;
 
         public static Order CreateOrder(
             OrderId Id, 
             ContractId ContractId,
-            DriverId? DriverAssigned,
+            DriverId DriverAssigned,
             Coordinates IncidentAddress,
             Coordinates DestinationAddress,
             List<ExtraCost> ExtraServicesApplied)

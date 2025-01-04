@@ -1,14 +1,14 @@
 ﻿using FluentValidation;
-using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder.Types;
 
 namespace OrdersMS.src.Orders.Infrastructure.Validators
 {
-    public class UpdateDriverAssignedValidator : AbstractValidator<UpdateDriverAssignedCommand>
+    public class UpdateTotalAmountOrderValidator : AbstractValidator<UpdateTotalAmountOrderCommand>
     {
-        public UpdateDriverAssignedValidator()
+        public UpdateTotalAmountOrderValidator()
         {
-            RuleFor(x => x.DriverAssigned)
-                .NotEmpty().WithMessage("Driver ID is required.");
+            RuleFor(x => x.TotalKmTraveled)
+                .NotEmpty().WithMessage("Total Km traveled are required.");
         }
     }
 }

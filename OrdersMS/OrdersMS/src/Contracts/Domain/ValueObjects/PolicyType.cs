@@ -5,7 +5,7 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
 {
     public class PolicyType : IValueObject<PolicyType>
     {
-        public static readonly string Basica = "Basica";
+        public static readonly string Basica = "Básica";
         public static readonly string Premium = "Premium";
         public static readonly string Diamante = "Diamante";
 

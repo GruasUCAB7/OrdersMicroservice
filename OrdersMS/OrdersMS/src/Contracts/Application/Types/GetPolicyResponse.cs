@@ -4,9 +4,9 @@
     (
         string Id,
         string Type,
-        int CoverageKm,
-        double CoverageAmount,
-        double PriceExtraKm,
+        decimal CoverageKm,
+        decimal CoverageAmount,
+        decimal PriceExtraKm,
         bool IsActive
     );
 }

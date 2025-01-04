@@ -7,8 +7,15 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
     {
         public UpdateOrderStatusValidator()
         {
-            RuleFor(x => x.Status)
-                .NotEmpty().WithMessage("Order status is required.");
+            RuleFor(x => x.OrderAcceptedDriverResponse)
+                .NotNull().WithMessage("Driver response of order accepted must be true or false.")
+                .Must(response => response == true || response == false)
+                .When(x => x.OrderAcceptedDriverResponse.HasValue);
+
+            RuleFor(x => x.OrderInProcessDriverResponse)
+                .NotNull().WithMessage("Driver response of order in process must be true or false.")
+                .Must(response => response == true || response == false)
+                .When(x => x.OrderInProcessDriverResponse.HasValue);
         }
     }
 }
