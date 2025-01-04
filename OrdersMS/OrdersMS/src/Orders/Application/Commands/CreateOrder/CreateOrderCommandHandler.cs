@@ -7,6 +7,7 @@ using OrdersMS.src.Contracts.Application.Exceptions;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
+using OrdersMS.src.Orders.Application.Events;
 using OrdersMS.src.Orders.Application.Exceptions;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Domain;
@@ -63,6 +64,8 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
                 new Coordinates(destinationCoordinatesResult.Latitude, destinationCoordinatesResult.Longitude),
                 new List<ExtraCost>()
             );
+
+            await _publishEndpoint.Publish(new OrderCreatedEvent(Guid.Parse(id)));
 
             await _orderRepository.Save(order);
 

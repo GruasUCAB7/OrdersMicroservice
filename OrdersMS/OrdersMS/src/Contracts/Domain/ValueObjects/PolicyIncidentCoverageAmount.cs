@@ -5,9 +5,9 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
 {
     public class PolicyIncidentCoverageAmount : IValueObject<PolicyIncidentCoverageAmount>
     {
-        private double CoverageAmount { get; }
+        private decimal CoverageAmount { get; }
 
-        public PolicyIncidentCoverageAmount(double coverageAmount)
+        public PolicyIncidentCoverageAmount(decimal coverageAmount)
         {
             if (coverageAmount < 0 || coverageAmount > 1000000)
             {
@@ -16,7 +16,7 @@ namespace OrdersMS.src.Contracts.Domain.ValueObjects
             CoverageAmount = coverageAmount;
         }
 
-        public double GetValue()
+        public decimal GetValue()
         {
             return CoverageAmount;
         }

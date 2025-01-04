@@ -6,9 +6,9 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
 {
     public class DriverId : IValueObject<DriverId>
     {
-        private string? Id { get; }
+        private string Id { get; }
 
-        public DriverId(string? id)
+        public DriverId(string id)
         {
             if (!UUIDRegExps.UUIDRegExp.IsMatch(id!) && id != "null")
             {
@@ -17,7 +17,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
             Id = id;
         }
 
-        public string? GetValue()
+        public string GetValue()
         {
             return Id;
         }

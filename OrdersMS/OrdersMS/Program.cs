@@ -1,7 +1,11 @@
 using DotNetEnv;
 using FluentValidation;
 using MassTransit;
+using RestSharp;
 using Microsoft.OpenApi.Models;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -18,14 +22,21 @@ using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredVehicle.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Validators;
-using OrdersMS.src.Orders.Application.Commands.AddExtraCost.Types;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Repositories;
 using OrdersMS.src.Orders.Infrastructure.Validators;
-using RestSharp;
+using OrdersMS.src.Orders.Infrastructure.StateMachine;
+using OrdersMS.src.Orders.Application.SagaData;
+using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder.Types;
+using OrdersMS.src.Orders.Domain.Services;
+using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted.Types;
+using OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost.Types;
+using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid.Types;
+using OrdersMS.src.Orders.Application.Commands.AddExtraCost;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,27 +52,43 @@ builder.Services.AddTransient<IValidator<UpdatePolicyCommand>, UpdatePolicyValid
 builder.Services.AddTransient<IValidator<CreateContractCommand>, CreateContractValidator>();
 builder.Services.AddTransient<IValidator<UpdateContractCommand>, UpdateContractValidator>();
 builder.Services.AddTransient<IValidator<CreateOrderCommand>, CreateOrderValidator>();
-builder.Services.AddTransient<IValidator<AddExtraCostCommand>, AddExtraCostValidator>();
+builder.Services.AddTransient<IValidator<ValidatePricesOfExtrasCostCommand>, ValidatePricesOfExtrasCostValidator>();
 builder.Services.AddTransient<IValidator<UpdateDriverAssignedCommand>, UpdateDriverAssignedValidator>();
 builder.Services.AddTransient<IValidator<UpdateOrderStatusCommand>, UpdateOrderStatusValidator>();
+builder.Services.AddTransient<IValidator<ValidateLocationCommand>, ValidateLocationDriverValidator>();
+builder.Services.AddTransient<IValidator<UpdateTotalAmountOrderCommand>, UpdateTotalAmountOrderValidator>();
+builder.Services.AddTransient<IValidator<UpdateOrderStatusToCompletedCommand>, UpdateOrderStatusToCompletedValidator>();
+builder.Services.AddTransient<IValidator<UpdateOrderStatusToPaidCommand>, UpdateOrderStatusToPaidValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
 builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IContractRepository, MongoContractRepository>();
 builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
+builder.Services.AddScoped<CalculateOrderTotalAmount>();
+builder.Services.AddScoped<AddExtraCostCommandHandler>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddScoped<IGoogleApiService, GoogleApiService>();
-builder.Services.AddSingleton<IRestClient>(sp => new RestClient(new RestClientOptions
-{
-    BaseUrl = new Uri("https://localhost:4052")
-}));
+builder.Services.AddSingleton<IRestClient>(sp => new RestClient());
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.SetKebabCaseEndpointNameFormatter();
 
     busConfiguration.AddConsumers(typeof(Program).Assembly);
 
-    //busConfiguration.AddSagaStateMachine<SagaData, SagaDataImplementation>();
+    busConfiguration.AddSagaStateMachine<OrderStatusStateMachine, OrderStatusSagaData>()
+        .MongoDbRepository(r =>
+        {
+            r.Connection = Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
+            r.DatabaseName = Environment.GetEnvironmentVariable("MONGODB_DATABASE_NAME_SAGA");
+            r.CollectionName = "events";
+        });
+
+    BsonClassMap.RegisterClassMap<OrderStatusSagaData>(cm =>
+    {
+        cm.AutoMap();
+        cm.MapIdProperty(x => x.CorrelationId)
+            .SetSerializer(new GuidSerializer(GuidRepresentation.Standard));
+    });
 
     busConfiguration.UsingRabbitMq((context, cfg) =>
     {

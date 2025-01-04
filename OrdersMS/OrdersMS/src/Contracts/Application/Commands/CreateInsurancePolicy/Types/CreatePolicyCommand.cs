@@ -2,8 +2,8 @@
 {
     public record CreatePolicyCommand(
         string Type,
-        int CoverageKm,
-        float CoverageAmount,
-        float PriceExtraKm
+        decimal CoverageKm,
+        decimal CoverageAmount,
+        decimal PriceExtraKm
     );
 }

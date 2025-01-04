@@ -8,7 +8,7 @@
     CoordinatesDto DestinationAddress,
     string IncidentDate,
     List<ExtraServiceDto> ExtraServicesApplied,
-    double TotalCost,
+    decimal TotalCost,
     string Status
 );
 

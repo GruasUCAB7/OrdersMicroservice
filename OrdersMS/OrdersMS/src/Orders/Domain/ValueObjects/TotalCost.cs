@@ -5,9 +5,9 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
 {
     public class TotalCost : IValueObject<TotalCost>
     {
-        public double Total { get; }
+        public decimal Total { get; }
 
-        public TotalCost(double total)
+        public TotalCost(decimal total)
         {
             if (total < -1)
             {
@@ -16,7 +16,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
             Total = total;
         }
 
-        public double GetValue()
+        public decimal GetValue()
         {
             return Total;
         }

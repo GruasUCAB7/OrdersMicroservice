@@ -12,8 +12,8 @@ namespace OrdersMS.src.Orders.Application.Repositories
         Task<List<Order>> GetAll(GetAllOrdersQuery data);
         Task<Optional<Order>> GetById(string id);
         Task<Result<Order>> Save(Order order);
-        Task<Result<Order>> UpdateDriverAssigned(Order order);
+        Task<Result<Order>> Update(Order order);
         Task<Result<Order>> UpdateExtraCosts(OrderId orderId, List<ExtraCost> extraCosts);
-        Task<Result<Order>> UpdateOrderStatus(Order order);
+        Task ValidateUpdateTimeForStatusPorAceptar();
     }
 }

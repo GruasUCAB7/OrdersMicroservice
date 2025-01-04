@@ -13,13 +13,13 @@ namespace OrdersMS.src.Contracts.Infrastructure.Models
         public required string PolicyType { get; set; }
 
         [BsonElement("coverageKm")]
-        public required int CoverageKm { get; set; }
+        public required decimal CoverageKm { get; set; }
 
         [BsonElement("coverageAmount")]
-        public required double CoverageAmount { get; set; }
+        public required decimal CoverageAmount { get; set; }
 
         [BsonElement("priceExtraKm")]
-        public required double PriceExtraKm { get; set; }
+        public required decimal PriceExtraKm { get; set; }
 
         [BsonElement("isActive")]
         public required bool IsActive { get; set; }

@@ -12,8 +12,12 @@ namespace OrdersMS.src.Orders.Infrastructure.Models
         [BsonElement("contractClient")]
         public required string ContractClient { get; set; }
 
+        //[BsonElement("createdByOperator")]
+        //public string CreatedByOperator { get; set; }
+
+
         [BsonElement("driverAssigned")]
-        public string? DriverAssigned { get; set; }
+        public required string DriverAssigned { get; set; }
 
         [BsonElement("incidentAddress")]
         public required MongoCoordinates IncidentAddress { get; set; }
@@ -28,7 +32,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Models
         public required List<MongoExtraServicesApplied> ExtraServicesApplied { get; set; }
 
         [BsonElement("totalCost")]
-        public double TotalCost { get; set; }
+        public decimal TotalCost { get; set; }
 
         [BsonElement("status")]
         public required string Status { get; set; }
