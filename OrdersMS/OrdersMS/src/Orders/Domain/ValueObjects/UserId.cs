@@ -4,13 +4,13 @@ using OrdersMS.src.Orders.Domain.Exceptions;
 
 namespace OrdersMS.src.Orders.Domain.ValueObjects
 {
-    public class DriverId : IValueObject<DriverId>
+    public class UserId : IValueObject<UserId>
     {
         private string Id { get; }
 
-        public DriverId(string id)
+        public UserId(string id)
         {
-            if (!UUIDRegExps.UUIDRegExp.IsMatch(id!) && id != "Por asignar")
+            if (!UUIDRegExps.UUIDRegExp.IsMatch(id!) && id != "null")
             {
                 throw new InvalidDriverIdException();
             }
@@ -22,7 +22,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
             return Id;
         }
 
-        public bool Equals(DriverId other)
+        public bool Equals(UserId other)
         {
             return Id == other.Id;
         }

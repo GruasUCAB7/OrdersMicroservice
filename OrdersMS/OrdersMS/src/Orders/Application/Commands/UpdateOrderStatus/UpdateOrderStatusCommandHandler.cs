@@ -75,9 +75,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
             var response = new GetOrderResponse(
                 order.GetId(),
                 order.GetContractId(),
+                order.GetOperatorAssigned(),
                 order.GetDriverAssigned(),
                 new CoordinatesDto(order.GetIncidentAddressLatitude(), order.GetIncidentAddressLongitude()),
                 new CoordinatesDto(order.GetDestinationAddressLatitude(), order.GetDestinationAddressLongitude()),
+                order.GetIncidentType(),
                 order.GetIncidentDate(),
                 extraServices,
                 order.GetTotalCost(),

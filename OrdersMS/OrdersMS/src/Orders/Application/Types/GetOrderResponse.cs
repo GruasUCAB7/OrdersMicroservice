@@ -3,9 +3,11 @@
     public record GetOrderResponse(
     string Id,
     string ContractClient,
+    string OperatorAssigned,
     string DriverAssigned,
     CoordinatesDto IncidentAddress,
     CoordinatesDto DestinationAddress,
+    string IncidentType,
     string IncidentDate,
     List<ExtraServiceDto> ExtraServicesApplied,
     decimal TotalCost,

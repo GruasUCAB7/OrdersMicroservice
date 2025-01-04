@@ -2,6 +2,7 @@
 {
     public record UpdateOrderStatusCommand
     (
+        string DriverId,
         bool? OrderAcceptedDriverResponse,
         bool? OrderInProcessDriverResponse,
         bool? OrderCanceledDriverResponse
