@@ -111,7 +111,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         {
             try
             {
-                var command = new UpdatePolicyCommand(data.IsActive);
+                var command = new UpdatePolicyCommand(data.IsActive, data.PolicyCoverageKm, data.PolicyIncidentCoverageAmount, data.PriceExtraKm);
 
                 var validate = _validatorUpdate.Validate(command);
                 if (!validate.IsValid)

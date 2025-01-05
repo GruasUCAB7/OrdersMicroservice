@@ -3,6 +3,7 @@ using OrdersMS.Core.Utils.Result;
 using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredPolicy.Types;
 using OrdersMS.src.Contracts.Application.Exceptions;
 using OrdersMS.src.Contracts.Application.Repositories;
+using OrdersMS.src.Contracts.Domain.ValueObjects;
 
 namespace OrdersMS.src.Contracts.Application.Commands.UpdateInsuredPolicy
 {
@@ -23,6 +24,21 @@ namespace OrdersMS.src.Contracts.Application.Commands.UpdateInsuredPolicy
             if (request.data.IsActive.HasValue)
             {
                 policy.SetIsActive(request.data.IsActive.Value);
+            }
+
+            if (request.data.PolicyCoverageKm != null)
+            {
+                policy.SetCoverageKm(new PolicyCoverageKm(request.data.PolicyCoverageKm.Value));
+            }
+
+            if (request.data.PolicyIncidentCoverageAmount != null)
+            {
+                policy.SetIncidentCoverageAmount(new PolicyIncidentCoverageAmount(request.data.PolicyIncidentCoverageAmount.Value));
+            }
+
+            if (request.data.PriceExtraKm != null)
+            {
+                policy.SetPriceKmExtra(new PriceExtraKm(request.data.PriceExtraKm.Value));
             }
 
             var updateResult = await _policyRepository.Update(policy);

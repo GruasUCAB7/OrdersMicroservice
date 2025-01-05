@@ -7,6 +7,7 @@ using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Domain.Entities;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Contracts.Infrastructure.Models;
+using OrdersMS.src.Orders.Domain;
 
 namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 {
@@ -113,11 +114,33 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
             return Result<InsurancePolicy>.Success(savedPolicy);
         }
 
-        public async Task<Result<InsurancePolicy>> Update(InsurancePolicy policy) //poner mas campos a actualizar
+        public async Task<Result<InsurancePolicy>> Update(InsurancePolicy policy)
         {
             var filter = Builders<BsonDocument>.Filter.Eq("_id", policy.GetId());
-            var update = Builders<BsonDocument>.Update
-                .Set("isActive", policy.GetIsActive());
+            var updateDefinitionBuilder = Builders<BsonDocument>.Update;
+            var updateDefinitions = new List<UpdateDefinition<BsonDocument>>();
+
+            if (policy.GetIsActive() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("isActive", policy.GetIsActive()));
+            }
+
+            if (policy.GetPolicyCoverageKm() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("coverageKm", policy.GetPolicyCoverageKm()));
+            }
+
+            if (policy.GetPolicyIncidentCoverageAmount() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("coverageAmount", policy.GetPolicyIncidentCoverageAmount()));
+            }
+
+            if (policy.GetPriceExtraKm() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("priceExtraKm", policy.GetPriceExtraKm()));
+            }
+
+            var update = updateDefinitionBuilder.Combine(updateDefinitions);
 
             var updateResult = await _policyCollection.UpdateOneAsync(filter, update);
 
