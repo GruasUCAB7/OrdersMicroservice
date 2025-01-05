@@ -2,6 +2,9 @@
 {
     public record UpdatePolicyCommand
     (
-        bool? IsActive
+        bool? IsActive,
+        decimal? PolicyCoverageKm,
+        decimal? PolicyIncidentCoverageAmount,
+        decimal? PriceExtraKm
     );
 }

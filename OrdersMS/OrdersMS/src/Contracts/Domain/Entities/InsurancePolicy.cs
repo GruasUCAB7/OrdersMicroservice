@@ -19,5 +19,8 @@ namespace OrdersMS.src.Contracts.Domain.Entities
         public decimal GetPriceExtraKm() => _pricePerExtraKm.GetValue();
         public bool GetIsActive() => _isActive;
         public void SetIsActive(bool isActive) => _isActive = isActive;
+        public void SetCoverageKm(PolicyCoverageKm coverageKm) => _coverageKm = coverageKm;
+        public void SetIncidentCoverageAmount(PolicyIncidentCoverageAmount coverageAmount) => _coverageAmount = coverageAmount;
+        public void SetPriceKmExtra(PriceExtraKm priceKm) => _pricePerExtraKm = priceKm;
     }
 }
