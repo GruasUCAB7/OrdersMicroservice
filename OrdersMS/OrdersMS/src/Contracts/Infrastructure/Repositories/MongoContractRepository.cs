@@ -7,6 +7,7 @@ using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Domain;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Contracts.Infrastructure.Models;
+using OrdersMS.src.Orders.Domain;
 
 namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 {
@@ -111,8 +112,17 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
         public async Task<Result<Contract>> Update(Contract contract)
         {
             var filter = Builders<BsonDocument>.Filter.Eq("_id", contract.GetId());
-            var update = Builders<BsonDocument>.Update
-                .Set("status", contract.GetStatus());
+            var updateDefinitionBuilder = Builders<BsonDocument>.Update;
+            var updateDefinitions = new List<UpdateDefinition<BsonDocument>>();
+
+            if (contract.GetStatus() != null)
+            {
+                updateDefinitions.Add(updateDefinitionBuilder.Set("status", contract.GetStatus()));
+            }
+
+            updateDefinitions.Add(updateDefinitionBuilder.Set("updatedDate", DateTime.UtcNow));
+
+            var update = updateDefinitionBuilder.Combine(updateDefinitions);
 
             var updateResult = await _contractCollection.UpdateOneAsync(filter, update);
 
