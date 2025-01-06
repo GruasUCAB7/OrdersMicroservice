@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -37,6 +38,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         private readonly ILoggerContract _logger = logger;
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateContract([FromBody] CreateContractCommand data)
         {
             try
@@ -73,6 +75,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllContracts([FromQuery] GetAllContractsQuery data)
         {
             try
@@ -92,6 +95,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> GetContractById(string id)
         {
             try
@@ -113,6 +117,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateContract([FromBody] UpdateContractCommand data, string id)
         {
             try
@@ -149,6 +154,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpGet("contractNumber")]
+        [Authorize(Roles = "Adminn Operator")]
         public async Task<IActionResult> GetContractIdByContractNumber([FromQuery] int contractNumber)
         {
             try
