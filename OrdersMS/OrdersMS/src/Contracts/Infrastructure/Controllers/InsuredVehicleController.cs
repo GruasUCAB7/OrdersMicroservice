@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -31,6 +32,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         private readonly ILoggerContract _logger = logger;
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleCommand data)
         {
             try
@@ -67,6 +69,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllVehicles([FromQuery] GetAllVehiclesQuery data)
         {
             try
@@ -86,6 +89,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> GetVehicleById(string id)
         {
             try
@@ -107,6 +111,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Controllers
         }
 
         [HttpPatch("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateVehicle([FromBody] UpdateVehicleCommand data, string id)
         {
             try

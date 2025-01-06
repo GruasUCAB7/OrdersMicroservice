@@ -33,6 +33,8 @@ using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.Services;
 using OrdersMS.src.Orders.Infrastructure.Types;
+using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json.Linq;
 
 
 namespace OrdersMS.src.Orders.Infrastructure.Controller
@@ -81,6 +83,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly ILoggerContract _logger = logger;
 
         [HttpPost]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand data, [FromHeader(Name = "Authorization")] string token)
         {
             try
@@ -131,6 +134,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> GetAllOrders([FromQuery] GetAllOrdersQuery data)
         {
             try
@@ -150,6 +154,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> GetOrderById(string id)
         {
             try
@@ -171,6 +176,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPatch("{orderId}/validatePricesExtraCost")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> AddExtraCost([FromBody] ValidatePricesOfExtrasCostCommand data, string orderId)
         {
             try
@@ -207,11 +213,13 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/updateDriverAssigned")]
-        public async Task<IActionResult> UpdateDriverAssigned([FromBody] UpdateDriverAssignedCommand data, string orderId)
+        [Authorize(Roles = "Admin, Operator")]
+        public async Task<IActionResult> UpdateDriverAssigned([FromBody] UpdateDriverAssignedCommand data, string orderId, [FromHeader(Name = "Authorization")] string token)
         {
             try
             {
                 var driverExistsRequest = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverAssigned}", Method.Get);
+                driverExistsRequest.AddHeader("Authorization", token);
                 var responseDriver1 = await _restClient.ExecuteAsync(driverExistsRequest);
                 if (!responseDriver1.IsSuccessful)
                 {
@@ -219,6 +227,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 }
 
                 var driverIsAvailableRequest = new RestRequest("https://localhost:4052/provider/provider/availables", Method.Get);
+                driverIsAvailableRequest.AddHeader("Authorization", token);
                 var responseDriver2 = await _restClient.ExecuteAsync(driverIsAvailableRequest);
                 if (!responseDriver2.IsSuccessful)
                 {
@@ -272,7 +281,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/updateOrderStatus")]
-        public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusCommand data, string orderId)
+        [Authorize(Roles = "Admin, Operator, Driver")]
+        public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusCommand data, string orderId, [FromHeader(Name = "Authorization")] string token)
         {
             try
             {
@@ -291,6 +301,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 if (data.OrderAcceptedDriverResponse == true)
                 {
                     var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverId}", Method.Patch);
+                    changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                     changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = false });
 
                     var responseDriver = await _restClient.ExecuteAsync(changeIsAvailableToTrueDriver);
@@ -303,6 +314,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 if (data.OrderCanceledDriverResponse == true)
                 {
                     var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverId}", Method.Patch);
+                    changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                     changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = true });
 
                     var responseDriver = await _restClient.ExecuteAsync(changeIsAvailableToTrueDriver);
@@ -332,7 +344,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/updateOrderStatusToCompleted")]
-        public async Task<IActionResult> UpdateOrderStatusToCompleted([FromBody] UpdateOrderStatusToCompletedCommand data, string orderId)
+        [Authorize(Roles = "Admin, Operator, Driver")]
+        public async Task<IActionResult> UpdateOrderStatusToCompleted([FromBody] UpdateOrderStatusToCompletedCommand data, string orderId, [FromHeader(Name = "Authorization")] string token)
         {
             try
             {
@@ -353,6 +366,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     var order = result.Unwrap();
 
                     var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Patch);
+                    changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                     changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = true });
 
                     var responseDriver1 = await _restClient.ExecuteAsync(changeIsAvailableToTrueDriver);
@@ -362,6 +376,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     }
 
                     var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Put);
+                    changeLocationDriver.AddHeader("Authorization", token);
                     changeLocationDriver.AddJsonBody(new { latitude = order.DestinationAddress.Latitude, longitude = order.DestinationAddress.Longitude });
 
                     var responseDriver2 = await _restClient.ExecuteAsync(changeLocationDriver);
@@ -387,6 +402,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/updateOrderStatusToPaid")]
+        [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> UpdateOrderStatusToPaid([FromBody] UpdateOrderStatusToPaidCommand data, string orderId)
         {
             try
@@ -422,6 +438,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/updateTotalAmountOrder")]
+        [Authorize(Roles = "Admin, Operator, Driver")]
         public async Task<IActionResult> UpdateTotalAmountOrder([FromBody] UpdateTotalAmountOrderCommand data, string orderId)
         {
             try
@@ -457,7 +474,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("{orderId}/validateDriverLocation")]
-        public async Task<IActionResult> ValidateDriverLocation([FromBody] ValidateLocationCommand data, string orderId)
+        [Authorize(Roles = "Admin, Operator, Driver")]
+        public async Task<IActionResult> ValidateDriverLocation([FromBody] ValidateLocationCommand data, string orderId, [FromHeader(Name = "Authorization")] string token)
         {
             try
             {
@@ -477,6 +495,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     var order = result.Unwrap();
 
                     var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Put);
+                    changeLocationDriver.AddHeader("Authorization", token);
                     changeLocationDriver.AddJsonBody(new { latitude = order.IncidentAddress.Latitude, longitude = order.IncidentAddress.Longitude });
 
                     var responseDriver = await _restClient.ExecuteAsync(changeLocationDriver);
@@ -502,7 +521,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpPut("changeOrderStatusToAssign")]
-        public async Task<IActionResult> ValidateUpdateTimeDriver()
+        public async Task<IActionResult> ValidateUpdateTimeDriver([FromHeader(Name = "Authorization")] string token)
         {
             try
             {
@@ -517,6 +536,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             {
                         var driverId = order.GetDriverAssigned();
                         var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{driverId}", Method.Patch);
+                        changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                         changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = true });
 
                         var responseDriver2 = await _restClient.ExecuteAsync(changeIsAvailableToTrueDriver);
