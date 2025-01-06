@@ -28,6 +28,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted
 
             if (request.data.OrderCompletedDriverResponse == true)
             {
+                if (order.GetOrderStatus() != "En Proceso")
+                {
+                    return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the En Proceso status"));
+                }
+                
                 order.SetStatus(new OrderStatus("Finalizado"));
                 await _publishEndpoint.Publish(new OrderCompletedEvent(Guid.Parse(order.GetId())));
             }

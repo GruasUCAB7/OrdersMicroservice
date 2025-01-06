@@ -7,7 +7,6 @@
         string IncidentAddress,
         string DestinationAddress,
         string IncidentType,
-        List<string>? ExtraServicesApplied,
-        string tokenJWT
+        List<string>? ExtraServicesApplied
      );
 }

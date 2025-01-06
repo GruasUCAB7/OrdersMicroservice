@@ -2,7 +2,6 @@
 {
     public record UpdateOrderStatusToCompletedCommand
     (
-        string DriverAssigned,
         bool OrderCompletedDriverResponse
     );
 }

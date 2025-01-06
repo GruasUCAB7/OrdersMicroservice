@@ -7,9 +7,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
     {
         public UpdateOrderStatusToCompletedValidator()
         {
-            RuleFor(x => x.DriverAssigned)
-                .NotEmpty().WithMessage("Driver assigned of order is required.");
-
             RuleFor(x => x.OrderCompletedDriverResponse)
                 .NotNull().WithMessage("Driver response of order completed must be true or false.")
                 .Must(response => response == true || response == false);

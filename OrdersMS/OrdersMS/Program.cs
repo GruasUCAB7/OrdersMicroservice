@@ -113,17 +113,33 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "API OrdersMicroservice",
-        Version = "v1",
-        Description = "Endpoints OrdersMicroservice",
+        Description = "Endpoints de OrdersMicroservice",
     });
-});
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowApiGateway",
-        builder => builder.WithOrigins("https://localhost:4050")
-                          .AllowAnyMethod()
-                          .AllowAnyHeader());
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Ingrese el token JWT en el formato: Bearer {token}"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
 var app = builder.Build();

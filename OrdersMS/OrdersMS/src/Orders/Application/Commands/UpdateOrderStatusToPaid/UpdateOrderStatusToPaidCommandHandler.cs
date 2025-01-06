@@ -1,7 +1,6 @@
 ﻿using MassTransit;
 using OrdersMS.Core.Application.Services;
 using OrdersMS.Core.Utils.Result;
-using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid.Types;
 using OrdersMS.src.Orders.Application.Events;
 using OrdersMS.src.Orders.Application.Exceptions;
@@ -29,6 +28,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid
 
             if (request.data.OrderPaidResponse == true)
             {
+                if (order.GetOrderStatus() != "Finalizado")
+                {
+                    return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Finalizado status"));
+                }
+
                 order.SetStatus(new OrderStatus("Pagado"));
                 await _publishEndpoint.Publish(new OrderPaidEvent(Guid.Parse(order.GetId())));
             }

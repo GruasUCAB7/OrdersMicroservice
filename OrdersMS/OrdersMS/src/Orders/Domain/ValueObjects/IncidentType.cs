@@ -5,7 +5,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
 {
     public class IncidentType : IValueObject<IncidentType>
     {
-        public static readonly string ColisionFrontal = "Colisión Frontal:";
+        public static readonly string ColisionFrontal = "Colisión Frontal";
         public static readonly string FalloFrenos = "Fallo de Frenos";
         public static readonly string TrenDelantero = "Rotura del Tren Delantero";
         public static readonly string FallaBateria = "Falla de Batería";

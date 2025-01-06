@@ -30,6 +30,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
             {
                 if (request.data.OrderAcceptedDriverResponse == true)
                 {
+                    if (order.GetOrderStatus() != "Por Aceptar")
+                    {
+                        return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Por Aceptar status"));
+                    }
+
                     order.SetStatus(new OrderStatus("Aceptado"));
                     await _publishEndpoint.Publish(new DriverAcceptedOrderEvent(Guid.Parse(order.GetId())));
                 }
@@ -37,7 +42,7 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
                 if (request.data.OrderAcceptedDriverResponse == false)
                 {
                     order.SetStatus(new OrderStatus("Por Asignar"));
-                    order.SetDriverAssigned(new DriverId("null"));
+                    order.SetDriverAssigned(new DriverId("Por asignar"));
                     await _publishEndpoint.Publish(new DriverRefusedOrderEvent(Guid.Parse(order.GetId())));
                 }
             }
@@ -46,6 +51,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
             {
                 if (request.data.OrderInProcessDriverResponse == true)
                 {
+                    if (order.GetOrderStatus() != "Localizado")
+                    {
+                        return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Localizado status"));
+                    }
+
                     order.SetStatus(new OrderStatus("En Proceso"));
                     await _publishEndpoint.Publish(new OrderInProcessEvent(Guid.Parse(order.GetId())));
                 }
@@ -55,6 +65,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
             {
                 if (request.data.OrderCanceledDriverResponse == true)
                 {
+                    if (order.GetOrderStatus() != "Localizado" || order.GetOrderStatus() != "En Proceso")
+                    {
+                        return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Localizado or the En Proceso status"));
+                    }
+
                     order.SetStatus(new OrderStatus("Cancelada"));
                     await _publishEndpoint.Publish(new OrderCanceledEvent(Guid.Parse(order.GetId())));
                 }
