@@ -28,11 +28,15 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
 
             var order = orderOptional.Unwrap();
 
+            if (order.GetOrderStatus() != "Por Asignar")
+            {
+                return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Por Asignar status"));
+            }
+
             if (!string.IsNullOrEmpty(request.data.DriverAssigned))
             {
                 order.SetDriverAssigned(new DriverId(request.data.DriverAssigned));
             }
-
             order.SetStatus(new OrderStatus("Por Aceptar"));
 
 
