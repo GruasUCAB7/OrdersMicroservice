@@ -15,16 +15,16 @@ namespace OrdersMS.src.Contracts.Domain.Entities
         ClientEmail clientEmail
         ) : Entity<VehicleId>(id)
     {
-        private VehicleId _id = id;
-        private VehicleBrand _brand = brand;
-        private VehicleModel _model = model;
-        private VehiclePlate _plate = plate;
-        private VehicleSize _vehicleSize = size;
-        private VehicleYear _year = year;
+        private readonly VehicleId _id = id;
+        private readonly VehicleBrand _brand = brand;
+        private readonly VehicleModel _model = model;
+        private readonly VehiclePlate _plate = plate;
+        private readonly VehicleSize _vehicleSize = size;
+        private readonly VehicleYear _year = year;
         private bool _isActive = true;
-        private ClientDNI _clientDNI = clientDNI;
-        private ClientName _clientName = clientName;
-        private ClientEmail _clientEmail = clientEmail;
+        private readonly ClientDNI _clientDNI = clientDNI;
+        private readonly ClientName _clientName = clientName;
+        private readonly ClientEmail _clientEmail = clientEmail;
 
         public string GetId() => _id.GetValue();
         public string GetBrand() => _brand.GetValue();
