@@ -21,7 +21,7 @@ namespace OrdersMS.Tests.InsuredVehicles.Application.Commands
         }
 
         [Fact]
-        public async Task ShouldUpdateinsuredVehicleSucces()
+        public async Task ShouldUpdateInsuredVehicleSucces()
         {
             var vehicleId = "53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d";
             var command = new UpdateVehicleCommand(true);
@@ -74,7 +74,7 @@ namespace OrdersMS.Tests.InsuredVehicles.Application.Commands
         }
 
         [Fact]
-        public async Task ShouldFailToUpdateINsuredVehicleWhenUpdateFails()
+        public async Task ShouldFailToUpdateInsuredVehicleWhenUpdateFails()
         {
             var vehicleId = "53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d";
             var command = new UpdateVehicleCommand(true);

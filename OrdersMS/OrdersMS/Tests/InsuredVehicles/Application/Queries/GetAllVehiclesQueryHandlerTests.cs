@@ -19,7 +19,7 @@ namespace OrdersMS.Tests.InsuredVehicles.Application.Queries
         }
 
         [Fact]
-        public async Task GetAllCranesSuccess()
+        public async Task GetAllInsuredVehiclesSuccess()
         {
             var query = new GetAllVehiclesQuery(1, 5, "");
             var handler = new GetAllVehiclesQueryHandler(_vehicleRepositoryMock.Object);
