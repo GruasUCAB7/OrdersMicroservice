@@ -41,7 +41,7 @@ namespace OrdersMS.Tests.InsurancePolicies.Application.Queries
         }
 
         [Fact]
-        public async Task GetInsurancePolicyByIdWhenCraneNotFound()
+        public async Task GetInsurancePolicyByIdWhenPolicyNotFound()
         {
             var query = new GetPolicyByIdQuery("53c0d8fa-dbca-4d98-9fdf-1d1413e90f9f");
 
