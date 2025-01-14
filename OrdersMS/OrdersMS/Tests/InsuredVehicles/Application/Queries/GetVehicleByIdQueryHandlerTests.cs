@@ -44,7 +44,7 @@ namespace OrdersMS.Tests.InsuredVehicles.Application.Queries
         }
 
         [Fact]
-        public async Task GetInsuredVehicleByIdWhenCraneNotFound()
+        public async Task GetInsuredVehicleByIdWhenVehicleNotFound()
         {
             var query = new GetVehicleByIdQuery("53c0d8fa-dbca-4d98-9fdf-1d1413e90f9f");
             var handler = new GetVehicleByIdQueryHandler(_vehicleRepositoryMock.Object);

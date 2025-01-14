@@ -21,7 +21,7 @@ namespace OrdersMS.Tests.InsurancePolicies.Application.Queries
         }
 
         [Fact]
-        public async Task GetAllCranesSuccess()
+        public async Task GetAllInsurancePoliciesSuccess()
         {
             var query = new GetAllPoliciesQuery(1, 5, "");
             var policies = new List<InsurancePolicy>
