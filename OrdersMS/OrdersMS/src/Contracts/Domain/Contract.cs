@@ -11,23 +11,23 @@ namespace OrdersMS.src.Contracts.Domain
         private ContractNumber _contractNumber;
         private PolicyId _policyId;
         private VehicleId _insuredVehicle;
-        private DateOnly _startDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        private DateOnly _expirationDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
+        private DateTime _startDate;
+        private DateTime _expirationDate;
         private ContractStatus _status = new ContractStatus("Activo");
 
         public string GetId() => _id.GetValue();
         public int GetContractNumber() => _contractNumber.GetValue();
         public string GetPolicyId() => _policyId.GetValue();
         public string GetVehicleId() => _insuredVehicle.GetValue();
-        public string GetStartDate() => _startDate.ToString();
-        public string GetExpirationDate() => _expirationDate.ToString();
+        public DateTime GetStartDate() => _startDate;
+        public DateTime GetExpirationDate() => _expirationDate;
         public string GetStatus() => _status.GetValue();
         public void SetStatus(ContractStatus status) => _status = status;
 
-        public static Contract CreateContract(ContractId id, ContractNumber number, PolicyId policyId, VehicleId insuredVehicle)
+        public static Contract CreateContract(ContractId id, ContractNumber number, PolicyId policyId, VehicleId insuredVehicle, DateTime startDate)
         {
             var contract = new Contract(id);
-            contract.Apply(ContractCreated.CreateEvent(id, number, policyId, insuredVehicle));
+            contract.Apply(ContractCreated.CreateEvent(id, number, policyId, insuredVehicle, startDate));
             return contract;
         }
 
@@ -37,8 +37,8 @@ namespace OrdersMS.src.Contracts.Domain
             _contractNumber = new ContractNumber(context.ContractNumber);
             _policyId = new PolicyId(context.PolicyId);
             _insuredVehicle = new VehicleId(context.VehicleId);
-            _startDate = DateOnly.FromDateTime(DateTime.UtcNow);
-            _expirationDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1));
+            _startDate = context.StartDate;
+            _expirationDate = context.StartDate.AddYears(1);
         }
 
         public override void ValidateState()

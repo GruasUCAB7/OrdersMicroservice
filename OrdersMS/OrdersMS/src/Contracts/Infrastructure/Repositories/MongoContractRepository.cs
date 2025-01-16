@@ -7,7 +7,6 @@ using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Domain;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Contracts.Infrastructure.Models;
-using OrdersMS.src.Orders.Domain;
 
 namespace OrdersMS.src.Contracts.Infrastructure.Repositories
 {
@@ -25,7 +24,7 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 "expirado" => filterBuilder.Eq("status", "Expirado"),
                 "cancelado" => filterBuilder.Eq("status", "Cancelado"),
                 _ => filterBuilder.Empty
-            };
+            }; 
 
             var contractEntities = await _contractCollection
                 .Find(filter)
@@ -40,11 +39,13 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                     new ContractId(c.GetValue("_id").AsString),
                     new ContractNumber(c.GetValue("contractNumber").AsInt32),
                     new PolicyId(c.GetValue("associatedPolicy").AsString),
-                    new VehicleId(c.GetValue("insuredVehicle").AsString)
+                    new VehicleId(c.GetValue("insuredVehicle").AsString),
+                    (DateTime)c.GetValue("startDate").ToLocalTime()
                 );
 
                 return contract;
             }).ToList();
+
 
             return contracts;
         }
@@ -63,7 +64,8 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 new ContractId(contractDocument.GetValue("_id").AsString),
                 new ContractNumber(contractDocument.GetValue("contractNumber").AsInt32),
                 new PolicyId(contractDocument.GetValue("associatedPolicy").AsString),
-                new VehicleId(contractDocument.GetValue("insuredVehicle").AsString)
+                new VehicleId(contractDocument.GetValue("insuredVehicle").AsString),
+                (DateTime)contractDocument.GetValue("startDate").ToLocalTime()
             );
 
             return Core.Utils.Optional.Optional<Contract>.Of(contract);
@@ -103,7 +105,8 @@ namespace OrdersMS.src.Contracts.Infrastructure.Repositories
                 new ContractId(mongoContract.Id),
                 new ContractNumber(mongoContract.ContractNumber),
                 new PolicyId(mongoContract.AssociatedPolicy),
-                new VehicleId(mongoContract.InsuredVehicle)
+                new VehicleId(mongoContract.InsuredVehicle),
+                mongoContract.StartDate
             );
 
             return Result<Contract>.Success(savedContract);

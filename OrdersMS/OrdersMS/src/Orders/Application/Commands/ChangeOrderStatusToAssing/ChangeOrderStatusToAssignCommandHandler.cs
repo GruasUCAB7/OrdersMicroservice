@@ -36,6 +36,7 @@ namespace OrdersMS.src.Orders.Application.Commands.ChangeOrderStatusToAssing
                         new Coordinates(order.GetIncidentAddressLatitude(), order.GetIncidentAddressLongitude()),
                         new Coordinates(order.GetDestinationAddressLatitude(), order.GetDestinationAddressLongitude()),
                         new IncidentType(order.GetIncidentType()),
+                        order.GetIncidentDate(),
                         extraServices
                     );
                     originalOrders.Add(originalOrder);

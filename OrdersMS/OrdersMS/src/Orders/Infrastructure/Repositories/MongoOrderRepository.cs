@@ -73,6 +73,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                         o.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
                     ),
                     new IncidentType(o.GetValue("incidentType").AsString),
+                    (DateTime)o.GetValue("incidentDate").ToLocalTime(),
                     extraServicesApplied
                 );
                 order.SetStatus(new OrderStatus(o.GetValue("status").AsString));
@@ -115,6 +116,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                     orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
                 ),
                 new IncidentType(orderDocument.GetValue("incidentType").AsString),
+                (DateTime)orderDocument.GetValue("incidentDate").ToLocalTime(),
                 extraServicesApplied
             );
             order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
@@ -146,8 +148,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 ExtraServicesApplied = new List<MongoExtraServicesApplied>(),
                 TotalCost = order.GetTotalCost(),
                 Status = order.GetOrderStatus(),
-                CreatedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow.ToLocalTime(),
+                UpdatedDate = DateTime.UtcNow.ToLocalTime()
             };
 
             var bsonDocument = new BsonDocument
@@ -187,6 +189,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 new Coordinates(mongoOrder.IncidentAddress.Latitude, mongoOrder.IncidentAddress.Longitude),
                 new Coordinates(mongoOrder.DestinationAddress.Latitude, mongoOrder.DestinationAddress.Longitude),
                 new IncidentType(mongoOrder.IncidentType),
+                mongoOrder.IncidentDate,
                 new List<ExtraCost>()
             );
 
@@ -301,6 +304,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                             orderDocument.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
                         ),
                         new IncidentType(orderDocument.GetValue("incidentType").AsString),
+                        (DateTime)orderDocument.GetValue("incidentDate").ToLocalTime(),
                         extraServicesApplied
                     );
 

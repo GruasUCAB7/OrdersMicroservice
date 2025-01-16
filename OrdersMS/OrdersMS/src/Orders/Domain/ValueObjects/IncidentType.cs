@@ -29,7 +29,7 @@ namespace OrdersMS.src.Orders.Domain.ValueObjects
                 && type != ProblemaBujias
                 && type != DesgasteNeumaticos)
             {
-                throw new InvalidIncidentTypeException($"Invalid order status: {type}. Allowed values are: {ColisionFrontal}, {FalloFrenos}, {TrenDelantero}, {FallaBateria}, {Sobrecalentamiento}, {FugasLiquidos}, {FallaSistemaElectrico}, {ProblemaBujias}, {DesgasteNeumaticos}.");
+                throw new InvalidIncidentTypeException($"Invalid incident type: {type}. Allowed values are: {ColisionFrontal}, {FalloFrenos}, {TrenDelantero}, {FallaBateria}, {Sobrecalentamiento}, {FugasLiquidos}, {FallaSistemaElectrico}, {ProblemaBujias}, {DesgasteNeumaticos}.");
             }
             Type = type;
         }

@@ -34,7 +34,6 @@ using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.Services;
 using OrdersMS.src.Orders.Infrastructure.Types;
 using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json.Linq;
 
 
 namespace OrdersMS.src.Orders.Infrastructure.Controller

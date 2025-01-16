@@ -19,10 +19,10 @@ namespace OrdersMS.src.Contracts.Infrastructure.Models
         public required string InsuredVehicle { get; set; }
 
         [BsonElement("startDate")]
-        public required string StartDate { get; set; }
+        public required DateTime StartDate { get; set; }
 
         [BsonElement("expirationDate")]
-        public required string ExpirationDate { get; set; }
+        public required DateTime ExpirationDate { get; set; }
 
         [BsonElement("status")]
         public required string Status { get; set; }

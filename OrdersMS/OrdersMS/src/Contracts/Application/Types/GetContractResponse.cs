@@ -6,8 +6,8 @@
         int ContractNumber,
         string AssociatedPolicy,
         string InsuredVehicle,
-        string StartDate,
-        string ExpirationDate,
+        DateTime StartDate,
+        DateTime ExpirationDate,
         string Status
     );
 }
