@@ -5,8 +5,8 @@
         string Id,
         string PolicyId,
         string VehicleId,
-        string StartDate,
-        string ExpirationDate,
+        DateTime StartDate,
+        DateTime ExpirationDate,
         string Status
     );
 }

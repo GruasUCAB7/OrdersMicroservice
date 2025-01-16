@@ -16,10 +16,10 @@ namespace OrdersMS.src.Orders.Domain
         private Coordinates _incidentAddress;
         private Coordinates _destinationAddress;
         private IncidentType _incidentType;
-        private DateOnly _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
-        private List<ExtraCost> _extraServicesApplied = new List<ExtraCost>();
-        private TotalCost _totalCost = new TotalCost(0);
-        private OrderStatus _status = new OrderStatus("Por Asignar");
+        private DateTime _incidentDate;
+        private List<ExtraCost> _extraServicesApplied;
+        private TotalCost _totalCost;
+        private OrderStatus _status;
 
         public string GetId() => _id.GetValue();
         public string GetContractId() => _contractId.GetValue();
@@ -32,7 +32,7 @@ namespace OrdersMS.src.Orders.Domain
         public double GetIncidentAddressLongitude() => _incidentAddress.GetLongitude();
         public double GetDestinationAddressLatitude() => _destinationAddress.GetLatitude();
         public double GetDestinationAddressLongitude() => _destinationAddress.GetLongitude();
-        public string GetIncidentDate() => _incidentDate.ToString();
+        public DateTime GetIncidentDate() => _incidentDate;
         public List<ExtraCost> GetExtrasServicesApplied() => _extraServicesApplied; 
         public decimal GetTotalCost() => _totalCost.GetValue();
         public string GetOrderStatus() => _status.GetValue();
@@ -40,6 +40,7 @@ namespace OrdersMS.src.Orders.Domain
         public void SetTotalCost(TotalCost amount) => _totalCost = amount;
         public void SetDriverAssigned(DriverId driverId) => _driverAssigned = driverId;
         public void SetExtraServicesApplied(List<ExtraCost> extraCosts) => _extraServicesApplied = extraCosts;
+        public void SetIncidentDate(DateTime incidentDate) => _incidentDate = incidentDate;
 
         public static Order CreateOrder(
             OrderId Id, 
@@ -49,10 +50,11 @@ namespace OrdersMS.src.Orders.Domain
             Coordinates IncidentAddress,
             Coordinates DestinationAddress,
             IncidentType IncidentType,
+            DateTime IncidentDate,
             List<ExtraCost> ExtraServicesApplied)
         {
             var order = new Order(Id);
-            order.Apply(OrderCreated.CreateEvent(Id, ContractId, OperatorId, DriverAssigned, IncidentAddress, DestinationAddress, IncidentType, ExtraServicesApplied));
+            order.Apply(OrderCreated.CreateEvent(Id, ContractId, OperatorId, DriverAssigned, IncidentAddress, DestinationAddress, IncidentType, IncidentDate, ExtraServicesApplied));
             return order;
         }
 
@@ -65,8 +67,10 @@ namespace OrdersMS.src.Orders.Domain
             _incidentAddress = new Coordinates(context.IncidentAddress.Latitude, context.IncidentAddress.Longitude);
             _destinationAddress = new Coordinates(context.DestinationAddress.Latitude, context.DestinationAddress.Longitude);
             _incidentType = new IncidentType(context.IncidentType);
-            _incidentDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            _incidentDate = context.IncidentDate;
             _extraServicesApplied = new List<ExtraCost>();
+            _totalCost = new TotalCost(0);
+            _status = new OrderStatus("Por Asignar");
         }
 
         public ExtraCost AddExtraCost(ExtraCostId id, ExtraCostName name, ExtraCostPrice price)

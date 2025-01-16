@@ -61,9 +61,10 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
                 new ContractId(data.ContractId),
                 new UserId(data.OperatorId),
                 new DriverId("Por asignar"),
-                new Coordinates(incidentCoordinatesResult.Latitude, incidentCoordinatesResult.Longitude),
-                new Coordinates(destinationCoordinatesResult.Latitude, destinationCoordinatesResult.Longitude),
+                new Coordinates(incidentCoordinatesResult.Unwrap().Latitude, incidentCoordinatesResult.Unwrap().Longitude),
+                new Coordinates(destinationCoordinatesResult.Unwrap().Latitude, destinationCoordinatesResult.Unwrap().Longitude),
                 new IncidentType(data.IncidentType),
+                DateTime.UtcNow,
                 new List<ExtraCost>()
             );
 

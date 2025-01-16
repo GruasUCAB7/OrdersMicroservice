@@ -28,7 +28,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Models
         public required string IncidentType { get; set; }
 
         [BsonElement("incidentDate")]
-        public required string IncidentDate { get; set; }
+        public required DateTime IncidentDate { get; set; }
 
         [BsonElement("extraServicesApplied")]
         public required List<MongoExtraServicesApplied> ExtraServicesApplied { get; set; }

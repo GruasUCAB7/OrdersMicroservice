@@ -63,7 +63,8 @@ namespace OrdersMS.src.Contracts.Application.Commands.CreateContract
                 new ContractId(id),
                 new ContractNumber(contractNumber),
                 new PolicyId(data.AssociatedPolicy),
-                new VehicleId(data.InsuredVehicle)
+                new VehicleId(data.InsuredVehicle),
+                DateTime.UtcNow
             );
             await _contractRepository.Save(contract);
 
