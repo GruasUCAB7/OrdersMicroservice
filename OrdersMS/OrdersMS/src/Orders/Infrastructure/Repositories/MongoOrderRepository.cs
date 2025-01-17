@@ -74,9 +74,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                     ),
                     new IncidentType(o.GetValue("incidentType").AsString),
                     (DateTime)o.GetValue("incidentDate").ToLocalTime(),
-                    extraServicesApplied
+                    extraServicesApplied,
+                    new TotalCost(o.GetValue("totalCost").AsDecimal),
+                    new OrderStatus(o.GetValue("status").AsString)
                 );
-                order.SetStatus(new OrderStatus(o.GetValue("status").AsString));
+                //order.SetStatus(new OrderStatus(o.GetValue("status").AsString));
                 order.SetExtraServicesApplied(extraServicesApplied);
 
                 return order;
@@ -117,9 +119,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 ),
                 new IncidentType(orderDocument.GetValue("incidentType").AsString),
                 (DateTime)orderDocument.GetValue("incidentDate").ToLocalTime(),
-                extraServicesApplied
+                extraServicesApplied,
+                new TotalCost(orderDocument.GetValue("totalCost").AsDecimal),
+                new OrderStatus(orderDocument.GetValue("status").AsString)
             );
-            order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
+            //order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
             order.SetExtraServicesApplied(extraServicesApplied);
 
             return Core.Utils.Optional.Optional<Order>.Of(order);
@@ -190,7 +194,9 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 new Coordinates(mongoOrder.DestinationAddress.Latitude, mongoOrder.DestinationAddress.Longitude),
                 new IncidentType(mongoOrder.IncidentType),
                 mongoOrder.IncidentDate,
-                new List<ExtraCost>()
+                new List<ExtraCost>(),
+                new TotalCost(mongoOrder.TotalCost),
+                new OrderStatus(mongoOrder.Status)
             );
 
             return Result<Order>.Success(savedOrder);
@@ -305,14 +311,14 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                         ),
                         new IncidentType(orderDocument.GetValue("incidentType").AsString),
                         (DateTime)orderDocument.GetValue("incidentDate").ToLocalTime(),
-                        extraServicesApplied
+                        extraServicesApplied,
+                        new TotalCost(orderDocument.GetValue("totalCost").AsDecimal),
+                        new OrderStatus(orderDocument.GetValue("status").AsString)
                     );
-
 
                     modifiedOrders.Add(order);
                 }
             }
-
             return modifiedOrders;
         }
     }

@@ -15,7 +15,9 @@ namespace OrdersMS.src.Orders.Domain.Events
         Coordinates destinationAddress,
         string incidentType,
         DateTime incidentDate,
-        List<ExtraCost> extraServicesApplied
+        List<ExtraCost> extraServicesApplied,
+        decimal totalCost,
+        string status
     )
     {
         public readonly string Id = id;
@@ -27,6 +29,9 @@ namespace OrdersMS.src.Orders.Domain.Events
         public readonly string IncidentType = incidentType;
         public readonly DateTime IncidentDate = incidentDate;
         public readonly List<ExtraCost> ExtraServicesApplied = extraServicesApplied;
+        public readonly decimal TotalCost = totalCost;
+        public readonly string Status = status;
+
 
         public static OrderCreatedEvent CreateEvent(
             OrderId Id,
@@ -37,7 +42,9 @@ namespace OrdersMS.src.Orders.Domain.Events
             Coordinates DestinationAddress,
             IncidentType IncidentType,
             DateTime IncidentDate,
-            List<ExtraCost> ExtraServicesApplied)
+            List<ExtraCost> ExtraServicesApplied,
+            TotalCost TotalCost,
+            OrderStatus Status)
         {
             return new OrderCreatedEvent(
                 Id.GetValue(),
@@ -51,7 +58,9 @@ namespace OrdersMS.src.Orders.Domain.Events
                     DestinationAddress,
                     IncidentType.GetValue(),
                     IncidentDate,
-                    ExtraServicesApplied
+                    ExtraServicesApplied,
+                    TotalCost.GetValue(),
+                    Status.GetValue()
                 )
             );
         }
