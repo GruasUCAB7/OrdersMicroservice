@@ -2,10 +2,7 @@
 using OrdersMS.src.Contracts.Application.Queries.GetContractId;
 using OrdersMS.src.Contracts.Application.Queries.GetContractId.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
-using OrdersMS.src.Contracts.Domain;
-using OrdersMS.Core.Utils.Result;
 using Xunit;
-using OrdersMS.src.Contracts.Application.Exceptions;
 
 namespace OrdersMS.Tests.Contracts.Application.Queries
 {

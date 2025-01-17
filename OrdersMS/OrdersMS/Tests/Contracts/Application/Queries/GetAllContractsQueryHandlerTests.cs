@@ -29,13 +29,15 @@ namespace OrdersMS.Tests.Contracts.Application.Queries
                         new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7f"),
                         new ContractNumber(6235),
                         new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d"),
-                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t")
+                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t"),
+                        DateTime.UtcNow
                     ),
                     Contract.CreateContract(
                         new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f8f"),
                         new ContractNumber(6235),
                         new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5y"),
-                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90t2d")
+                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90t2d"),
+                        DateTime.UtcNow
                     )
             };
 

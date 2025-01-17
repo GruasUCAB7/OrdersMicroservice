@@ -18,7 +18,6 @@ using OrdersMS.src.Contracts.Domain.Entities;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Contracts.Infrastructure.Controllers;
 using Xunit;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace OrdersMS.Tests.Contracts.Infrastructure
 {
@@ -117,13 +116,15 @@ namespace OrdersMS.Tests.Contracts.Infrastructure
                         new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7f"),
                         new ContractNumber(6235),
                         new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d"),
-                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t")
+                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t"),
+                        DateTime.UtcNow
                     ),
                     Contract.CreateContract(
                         new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5e"),
                         new ContractNumber(6235),
                         new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7h"),
-                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f55")
+                        new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f55"),
+                        DateTime.UtcNow
                     ),
             };
 
@@ -147,7 +148,8 @@ namespace OrdersMS.Tests.Contracts.Infrastructure
             var number = new ContractNumber(6235);
             var policyId = new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7h");
             var vehicleId = new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f55");
-            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId);
+            var startDate = DateTime.UtcNow;
+            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId, startDate);
 
             var query = new GetContractByIdQuery(contractId.GetValue());
 
@@ -179,7 +181,8 @@ namespace OrdersMS.Tests.Contracts.Infrastructure
             var number = new ContractNumber(6235);
             var policyId = new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7h");
             var vehicleId = new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f55");
-            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId);
+            var startDate = DateTime.UtcNow;
+            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId, startDate);
 
             var command = new UpdateContractCommand("Activo");
 
@@ -229,7 +232,8 @@ namespace OrdersMS.Tests.Contracts.Infrastructure
             var number = new ContractNumber(6235);
             var policyId = new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7h");
             var vehicleId = new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f55");
-            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId);
+            var startDate = DateTime.UtcNow;
+            var existingContract = Contract.CreateContract(contractId, number, policyId, vehicleId, startDate);
 
             var query = new GetContractIdQuery(number.GetValue());
 

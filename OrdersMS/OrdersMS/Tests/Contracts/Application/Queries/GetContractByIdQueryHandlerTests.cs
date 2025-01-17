@@ -2,11 +2,8 @@
 using OrdersMS.Core.Utils.Optional;
 using OrdersMS.src.Contracts.Application.Queries.GetContractById;
 using OrdersMS.src.Contracts.Application.Queries.GetContractById.Types;
-using OrdersMS.src.Contracts.Application.Queries.GetPolicyById;
-using OrdersMS.src.Contracts.Application.Queries.GetPolicyById.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Domain;
-using OrdersMS.src.Contracts.Domain.Entities;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using Xunit;
 
@@ -31,7 +28,8 @@ namespace OrdersMS.Tests.Contracts.Application.Queries
                 new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7f"),
                 new ContractNumber(6235),
                 new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d"),
-                new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t")
+                new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t"),
+                DateTime.UtcNow
             );
 
             _contractRepositoryMock.Setup(x => x.GetById(query.Id)).ReturnsAsync(Optional<Contract>.Of(contract));

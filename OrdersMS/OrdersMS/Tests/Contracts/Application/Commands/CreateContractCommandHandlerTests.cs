@@ -69,7 +69,8 @@ namespace OrdersMS.Tests.Contracts.Application.Commands
                 new ContractId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f7f"),
                 new ContractNumber(6235),
                 new PolicyId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f0d"),
-                new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t")
+                new VehicleId("53c0d8fa-dbca-4d98-9fdf-1d1413e90f5t"),
+                DateTime.UtcNow
             );
 
             _contractRepositoryMock.Setup(x => x.Save(contract)).ReturnsAsync(Result<Contract>.Success(contract));
