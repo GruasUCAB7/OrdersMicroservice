@@ -65,7 +65,9 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateOrder
                 new Coordinates(destinationCoordinatesResult.Unwrap().Latitude, destinationCoordinatesResult.Unwrap().Longitude),
                 new IncidentType(data.IncidentType),
                 DateTime.UtcNow,
-                new List<ExtraCost>()
+                new List<ExtraCost>(),
+                new TotalCost(0),
+                new OrderStatus("Por Asignar")
             );
 
             await _publishEndpoint.Publish(new OrderCreatedEvent(Guid.Parse(id)));

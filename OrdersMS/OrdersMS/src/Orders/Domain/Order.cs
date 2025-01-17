@@ -51,10 +51,12 @@ namespace OrdersMS.src.Orders.Domain
             Coordinates DestinationAddress,
             IncidentType IncidentType,
             DateTime IncidentDate,
-            List<ExtraCost> ExtraServicesApplied)
+            List<ExtraCost> ExtraServicesApplied,
+            TotalCost TotalCost,
+            OrderStatus Status)
         {
             var order = new Order(Id);
-            order.Apply(OrderCreated.CreateEvent(Id, ContractId, OperatorId, DriverAssigned, IncidentAddress, DestinationAddress, IncidentType, IncidentDate, ExtraServicesApplied));
+            order.Apply(OrderCreated.CreateEvent(Id, ContractId, OperatorId, DriverAssigned, IncidentAddress, DestinationAddress, IncidentType, IncidentDate, ExtraServicesApplied, TotalCost, Status));
             return order;
         }
 
@@ -69,8 +71,8 @@ namespace OrdersMS.src.Orders.Domain
             _incidentType = new IncidentType(context.IncidentType);
             _incidentDate = context.IncidentDate;
             _extraServicesApplied = new List<ExtraCost>();
-            _totalCost = new TotalCost(0);
-            _status = new OrderStatus("Por Asignar");
+            _totalCost = new TotalCost(context.TotalCost);
+            _status = new OrderStatus(context.Status);
         }
 
         public ExtraCost AddExtraCost(ExtraCostId id, ExtraCostName name, ExtraCostPrice price)
@@ -92,7 +94,7 @@ namespace OrdersMS.src.Orders.Domain
 
         public override void ValidateState()
         {
-            if (_id == null ||  _contractId == null || _operatorAssigned == null || _incidentAddress == null || _destinationAddress == null || _incidentType == null)
+            if (_id == null ||  _contractId == null || _operatorAssigned == null || _incidentAddress == null || _destinationAddress == null || _incidentType == null || _totalCost == null || _status == null)
             {
                 throw new InvalidOrderException();
             }
