@@ -2,7 +2,6 @@
 {
     public record UpdateOrderStatusToPaidCommand
     (
-        string OperatorId,
         bool OrderPaidResponse
     );
 }

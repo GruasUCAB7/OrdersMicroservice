@@ -1,8 +1,7 @@
 ﻿using FluentValidation;
 using MassTransit;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RestSharp;
-using System.Text.Json;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -21,19 +20,22 @@ using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder;
 using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder.Types;
-using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident;
 using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident.Types;
+using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncident;
 using OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost;
 using OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost.Types;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders.Types;
+using OrdersMS.src.Orders.Application.Queries.GetAllOrdersByDriverAssigned;
+using OrdersMS.src.Orders.Application.Queries.GetAllOrdersByDriverAssigned.Types;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.Services;
 using OrdersMS.src.Orders.Infrastructure.Types;
-using Microsoft.AspNetCore.Authorization;
+using RestSharp;
+using System.Text.Json;
 
 
 namespace OrdersMS.src.Orders.Infrastructure.Controller
@@ -68,8 +70,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly IValidator<CreateOrderCommand> _validatorCreate = validatorCreate;
         private readonly IValidator<ValidatePricesOfExtrasCostCommand> _validatorPricesExtrasCost = validatorPricesExtrasCost;
         private readonly IValidator<UpdateDriverAssignedCommand> _validatorDriverAssigned = validatorDriverAssigned;
-        private readonly IValidator<UpdateOrderStatusCommand> _validatorOrderStatus = validatorOrderStatus; 
-        private readonly IValidator<ValidateLocationCommand> _validatorLocationDriver = validatorLocationDriver; 
+        private readonly IValidator<UpdateOrderStatusCommand> _validatorOrderStatus = validatorOrderStatus;
+        private readonly IValidator<ValidateLocationCommand> _validatorLocationDriver = validatorLocationDriver;
         private readonly IValidator<UpdateTotalAmountOrderCommand> _validatorTotalAmount = validatorTotalAmount;
         private readonly IValidator<UpdateOrderStatusToCompletedCommand> _validatorOrderstatusToCompleted = validatorOrderstatusToCompleted;
         private readonly IValidator<UpdateOrderStatusToPaidCommand> _validatorOrderstatusToPaid = validatorOrderstatusToPaid;
@@ -133,7 +135,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin, Operator")]
+        [Authorize(Roles = "Admin, Operator, Driver")]
         public async Task<IActionResult> GetAllOrders([FromQuery] GetAllOrdersQuery data)
         {
             try
@@ -152,8 +154,29 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             }
         }
 
+
+        [HttpGet("ordersByDriverId/{driverId}")]
+        [Authorize(Roles = "Admin, Operator, Driver")]
+        public async Task<IActionResult> GetAllOrdersByDriverAssigned([FromQuery] GetAllOrdersByDriverAssignedQuery data, string driverId)
+        {
+            try
+            {
+                var query = new GetAllOrdersByDriverAssignedQuery(data.PerPage, data.Page);
+                var handler = new GetAllOrdersByDriverAssignedQueryHandler(_orderRepo);
+                var result = await handler.Execute((query, driverId));
+
+                _logger.Log("List of orders: {OrderIds}", string.Join(", ", result.Unwrap().Select(c => c.Id)));
+                return StatusCode(200, result.Unwrap());
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("Failed to get list of orders", ex.Message);
+                return StatusCode(200, Array.Empty<GetOrderResponse>());
+            }
+        }
+
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin, Operator")]
+        [Authorize(Roles = "Admin, Operator, Driver")]
         public async Task<IActionResult> GetOrderById(string id)
         {
             try
@@ -285,7 +308,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
-                var command = new UpdateOrderStatusCommand(data.DriverId, data.OrderAcceptedDriverResponse, data.OrderInProcessDriverResponse, data.OrderCanceledDriverResponse);
+                var command = new UpdateOrderStatusCommand(data.OrderAcceptedDriverResponse, data.OrderInProcessDriverResponse, data.OrderCanceledDriverResponse);
 
                 var validate = _validatorOrderStatus.Validate(command);
                 if (!validate.IsValid)
@@ -296,10 +319,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 }
                 var handler = new UpdateOrderStatusCommandHandler(_orderRepo, _publishEndpoint);
                 var result = await handler.Execute((orderId, command));
+                var order = result.Unwrap();
 
                 if (data.OrderAcceptedDriverResponse == true)
                 {
-                    var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverId}", Method.Patch);
+                    var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Patch);
                     changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                     changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = false });
 
@@ -312,7 +336,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
 
                 if (data.OrderCanceledDriverResponse == true)
                 {
-                    var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{data.DriverId}", Method.Patch);
+                    var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Patch);
                     changeIsAvailableToTrueDriver.AddHeader("Authorization", token);
                     changeIsAvailableToTrueDriver.AddJsonBody(new { isAvailable = true });
 
@@ -325,7 +349,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
 
                 if (result.IsSuccessful)
                 {
-                    var order = result.Unwrap();
                     _logger.Log("Order status updated: {OrderId}", orderId);
                     return Ok(order);
                 }
@@ -406,7 +429,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
-                var command = new UpdateOrderStatusToPaidCommand(data.OperatorId, data.OrderPaidResponse);
+                var command = new UpdateOrderStatusToPaidCommand(data.OrderPaidResponse);
 
                 var validate = _validatorOrderstatusToPaid.Validate(command);
                 if (!validate.IsValid)
@@ -451,7 +474,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     _logger.Error($"Validation failed for UpdateTotalAmountOrderCommand: {string.Join(", ", errors)}");
                     return StatusCode(400, errors);
                 }
-                var handler = new UpdateTotalAmountOrderCommandHandler(_orderRepo, _contractRepo, _policyRepo, _publishEndpoint, _calculateOrderTotalAmount);
+                var handler = new UpdateTotalAmountOrderCommandHandler(_orderRepo, _contractRepo, _policyRepo, _calculateOrderTotalAmount);
                 var result = await handler.Execute((orderId, command));
                 if (result.IsSuccessful)
                 {
@@ -487,7 +510,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     _logger.Error($"Validation failed for ValidateLocationCommand: {string.Join(", ", errors)}");
                     return StatusCode(400, errors);
                 }
-                var handler = new ValidateLocationDriverToIncidecidentCommandHandler (_orderRepo, _publishEndpoint);
+                var handler = new ValidateLocationDriverToIncidentCommandHandler(_orderRepo, _publishEndpoint);
                 var result = await handler.Execute((orderId, command));
                 if (result.IsSuccessful)
                 {
@@ -531,8 +554,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 {
                     var modifiedOrders = result.Unwrap();
 
-                    foreach(var order in modifiedOrders)
-            {
+                    foreach (var order in modifiedOrders)
+                    {
                         var driverId = order.GetDriverAssigned();
                         var changeIsAvailableToTrueDriver = new RestRequest($"https://localhost:4052/provider/driver/{driverId}", Method.Patch);
                         changeIsAvailableToTrueDriver.AddHeader("Authorization", token);

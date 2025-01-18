@@ -65,7 +65,7 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus
             {
                 if (request.data.OrderCanceledDriverResponse == true)
                 {
-                    if (order.GetOrderStatus() != "Localizado" || order.GetOrderStatus() != "En Proceso")
+                    if (order.GetOrderStatus() != "Localizado" && order.GetOrderStatus() != "En Proceso")
                     {
                         return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Localizado or the En Proceso status"));
                     }

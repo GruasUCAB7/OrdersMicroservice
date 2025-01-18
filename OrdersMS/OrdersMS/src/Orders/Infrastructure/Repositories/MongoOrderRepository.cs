@@ -5,6 +5,7 @@ using OrdersMS.Core.Utils.Result;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
 using OrdersMS.src.Orders.Application.Exceptions;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders.Types;
+using OrdersMS.src.Orders.Application.Queries.GetAllOrdersByDriverAssigned.Types;
 using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Domain;
 using OrdersMS.src.Orders.Domain.Entities;
@@ -78,7 +79,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                     new TotalCost(o.GetValue("totalCost").AsDecimal),
                     new OrderStatus(o.GetValue("status").AsString)
                 );
-                //order.SetStatus(new OrderStatus(o.GetValue("status").AsString));
                 order.SetExtraServicesApplied(extraServicesApplied);
 
                 return order;
@@ -123,7 +123,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 new TotalCost(orderDocument.GetValue("totalCost").AsDecimal),
                 new OrderStatus(orderDocument.GetValue("status").AsString)
             );
-            //order.SetStatus(new OrderStatus(orderDocument.GetValue("status").AsString));
             order.SetExtraServicesApplied(extraServicesApplied);
 
             return Core.Utils.Optional.Optional<Order>.Of(order);
@@ -320,6 +319,53 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 }
             }
             return modifiedOrders;
+        }
+
+        public async Task<List<Order>> GetAllOrdersByDriverAssigned(GetAllOrdersByDriverAssignedQuery data, string driverId)
+        {
+            var filterBuilder = Builders<BsonDocument>.Filter;
+            var filter = filterBuilder.Eq("driverAssigned", driverId);
+
+            var orderEntities = await _orderCollection
+                .Find(filter)
+                .Skip(data.PerPage * (data.Page - 1))
+                .Limit(data.PerPage)
+                .ToListAsync();
+
+            var orders = orderEntities.Select(o =>
+            {
+                var extraServicesApplied = o.GetValue("extraServicesApplied").AsBsonArray
+                    .Select(extraService => new ExtraCost(
+                        new ExtraCostId(extraService["id"].AsString),
+                        new ExtraCostName(extraService["name"].AsString),
+                        new ExtraCostPrice(extraService["price"].AsDecimal)
+                    )).ToList();
+
+                var order = Order.CreateOrder(
+                    new OrderId(o.GetValue("_id").AsString),
+                    new ContractId(o.GetValue("contractClient").AsString),
+                    new UserId(o.GetValue("createdByOperator").AsString),
+                    new DriverId(o.GetValue("driverAssigned").AsString),
+                    new Coordinates(
+                        o.GetValue("incidentAddress").AsBsonDocument.GetValue("latitude").AsDouble,
+                        o.GetValue("incidentAddress").AsBsonDocument.GetValue("longitude").AsDouble
+                    ),
+                    new Coordinates(
+                        o.GetValue("destinationAddress").AsBsonDocument.GetValue("latitude").AsDouble,
+                        o.GetValue("destinationAddress").AsBsonDocument.GetValue("longitude").AsDouble
+                    ),
+                    new IncidentType(o.GetValue("incidentType").AsString),
+                    (DateTime)o.GetValue("incidentDate").ToLocalTime(),
+                    extraServicesApplied,
+                    new TotalCost(o.GetValue("totalCost").AsDecimal),
+                    new OrderStatus(o.GetValue("status").AsString)
+                );
+                order.SetExtraServicesApplied(extraServicesApplied);
+
+                return order;
+            }).ToList();
+
+            return orders;
         }
     }
 }

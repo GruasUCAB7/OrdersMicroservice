@@ -6,7 +6,7 @@ namespace OrdersMS.src.Orders.Domain.Services
 {
     public class CalculateOrderTotalAmount : IDomainService<CalculateOrderTotalAmountInput, TotalCost>
     {
-        public TotalCost Execute(CalculateOrderTotalAmountInput data)
+        public virtual TotalCost Execute(CalculateOrderTotalAmountInput data)
         {
             decimal totalAmount = 0;
 

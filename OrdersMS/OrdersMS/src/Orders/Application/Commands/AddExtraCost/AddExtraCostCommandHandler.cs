@@ -20,7 +20,7 @@ namespace OrdersMS.src.Orders.Application.Commands.AddExtraCost
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IdGenerator<string> _idGenerator = idGenerator;
 
-        public async Task<Result<GetOrderResponse>> Execute((string orderId, AddExtraCostCommand data) request)
+        public virtual async Task<Result<GetOrderResponse>> Execute((string orderId, AddExtraCostCommand data) request)
         {
             var orderExist = await _orderRepository.GetById(request.orderId);
             if (!orderExist.HasValue)
