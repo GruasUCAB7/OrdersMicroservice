@@ -18,13 +18,11 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder
         IOrderRepository orderRepository, 
         IContractRepository contractRepository,
         IPolicyRepository policyRepository,
-        IPublishEndpoint publishEndpoint,
         CalculateOrderTotalAmount calculateOrderTotalAmount) : IService<(string orderId, UpdateTotalAmountOrderCommand data), GetOrderResponse>
     {
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IContractRepository _contractRepository = contractRepository;
         private readonly IPolicyRepository _policyRepository = policyRepository;
-        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly CalculateOrderTotalAmount _calculateOrderTotalAmount = calculateOrderTotalAmount;
 
         public async Task<Result<GetOrderResponse>> Execute((string orderId, UpdateTotalAmountOrderCommand data) request)
@@ -57,6 +55,10 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder
 
             var policyId = contract.GetPolicyId();
             var policyOptional = await _policyRepository.GetById(policyId);
+            if (!policyOptional.HasValue)
+            {
+                return Result<GetOrderResponse>.Failure(new PolicyNotFoundException());
+            }
 
             var policy = policyOptional.Unwrap();
 

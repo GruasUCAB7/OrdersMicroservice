@@ -7,9 +7,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
     {
         public UpdateOrderStatusToPaidValidator()
         {
-            RuleFor(x => x.OperatorId)
-                .NotEmpty().WithMessage("Operator ID is required.");
-
             RuleFor(x => x.OrderPaidResponse)
                 .NotNull().WithMessage("Response of order paid must be true or false.")
                 .Must(response => response == true || response == false);

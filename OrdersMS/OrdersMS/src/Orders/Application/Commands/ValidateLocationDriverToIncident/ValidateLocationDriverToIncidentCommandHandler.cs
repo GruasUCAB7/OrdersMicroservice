@@ -8,9 +8,9 @@ using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.ValueObjects;
 
-namespace OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident
+namespace OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncident
 {
-    public class ValidateLocationDriverToIncidecidentCommandHandler(
+    public class ValidateLocationDriverToIncidentCommandHandler(
         IOrderRepository orderRepository,
         IPublishEndpoint publishEndpoint
     ) : IService<(string orderId, ValidateLocationCommand data), GetOrderResponse>
@@ -33,7 +33,7 @@ namespace OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncid
                 {
                     return Result<GetOrderResponse>.Failure(new OrderUpdateFailedException("The order is not in the Aceptado status"));
                 }
-                
+
                 order.SetStatus(new OrderStatus("Localizado"));
                 await _publishEndpoint.Publish(new DriverIsAtTheIncidentEvent(Guid.Parse(order.GetId())));
             }

@@ -60,7 +60,7 @@ namespace OrdersMS.Tests.Contracts.Application.Commands
         }
 
         [Fact]
-        public async Task ShouldFailToUpdateInsurancePolicyWhenUpdateFails()
+        public async Task ShouldFailToUpdateContractWhenUpdateFails()
         {
             var contractId = "53c0d8fa-dbca-4d98-9fdf-1d1413e90f7f";
             var command = new UpdateContractCommand("Expirado");
