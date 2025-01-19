@@ -5,11 +5,18 @@ using OrdersMS.src.Orders.Application.Repositories;
 
 namespace OrdersMS.src.Orders.Application.Queries.GetExtraCostsByOrderId
 {
-    public class GetExtraCostsByOrderIdQueryHandler(IExtraCostRepository extraCostRepository)
+    public class GetExtraCostsByOrderIdQueryHandler(IExtraCostRepository extraCostRepository, IOrderRepository orderRepository)
     {
         private readonly IExtraCostRepository _extraCostRepository = extraCostRepository;
+        private readonly IOrderRepository _orderRepository = orderRepository;
         public async Task<Result<GetExtraCostResponse>> Execute(string orderId)
         {
+            var orderOptional = await _orderRepository.GetById(orderId);
+            if (!orderOptional.HasValue)
+            {
+                return Result<GetExtraCostResponse>.Failure(new OrderNotFoundException());
+            }
+
             var extraCosts = await _extraCostRepository.GetExtraCostByOrderId(orderId);
             if (extraCosts == null)
             {
