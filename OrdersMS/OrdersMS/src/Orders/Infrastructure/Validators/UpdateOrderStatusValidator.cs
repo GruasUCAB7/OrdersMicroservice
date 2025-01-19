@@ -16,6 +16,11 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
                 .NotNull().WithMessage("Driver response of order in process must be true or false.")
                 .Must(response => response == true || response == false)
                 .When(x => x.OrderInProcessDriverResponse.HasValue);
+
+            RuleFor(x => x.OrderCanceledDriverResponse)
+                .NotNull().WithMessage("Driver response of order canceled must be true or false.")
+                .Must(response => response == true || response == false)
+                .When(x => x.OrderCanceledDriverResponse.HasValue);
         }
     }
 }

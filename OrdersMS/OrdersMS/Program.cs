@@ -1,18 +1,18 @@
 using DotNetEnv;
 using FluentValidation;
 using MassTransit;
-using RestSharp;
-using Microsoft.OpenApi.Models;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.OpenApi.Models;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
+using OrdersMS.Core.Application.Firebase;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
 using OrdersMS.Core.Infrastructure.Data;
+using OrdersMS.Core.Infrastructure.Firebase;
 using OrdersMS.Core.Infrastructure.GoogleMaps;
 using OrdersMS.Core.Infrastructure.Logger;
 using OrdersMS.Core.Infrastructure.UUID;
@@ -25,21 +25,24 @@ using OrdersMS.src.Contracts.Application.Commands.UpdateInsuredVehicle.Types;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Repositories;
 using OrdersMS.src.Contracts.Infrastructure.Validators;
+using OrdersMS.src.Orders.Application.Commands.AddExtraCost;
+using OrdersMS.src.Orders.Application.Commands.CreateExtraCost.Types;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatus.Types;
-using OrdersMS.src.Orders.Application.Repositories;
-using OrdersMS.src.Orders.Infrastructure.Repositories;
-using OrdersMS.src.Orders.Infrastructure.Validators;
-using OrdersMS.src.Orders.Infrastructure.StateMachine;
-using OrdersMS.src.Orders.Application.SagaData;
-using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident.Types;
-using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder.Types;
-using OrdersMS.src.Orders.Domain.Services;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToCompleted.Types;
-using OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateOrderStatusToPaid.Types;
-using OrdersMS.src.Orders.Application.Commands.AddExtraCost;
+using OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder.Types;
+using OrdersMS.src.Orders.Application.Commands.ValidateLocationDriverToIncidecident.Types;
+using OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost.Types;
+using OrdersMS.src.Orders.Application.Repositories;
+using OrdersMS.src.Orders.Application.SagaData;
+using OrdersMS.src.Orders.Domain.Services;
+using OrdersMS.src.Orders.Infrastructure.Repositories;
+using OrdersMS.src.Orders.Infrastructure.StateMachine;
+using OrdersMS.src.Orders.Infrastructure.Validators;
+using RestSharp;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,16 +65,27 @@ builder.Services.AddTransient<IValidator<ValidateLocationCommand>, ValidateLocat
 builder.Services.AddTransient<IValidator<UpdateTotalAmountOrderCommand>, UpdateTotalAmountOrderValidator>();
 builder.Services.AddTransient<IValidator<UpdateOrderStatusToCompletedCommand>, UpdateOrderStatusToCompletedValidator>();
 builder.Services.AddTransient<IValidator<UpdateOrderStatusToPaidCommand>, UpdateOrderStatusToPaidValidator>();
+builder.Services.AddTransient<IValidator<CreateExtraCostCommand>, CreateExtraCostValidator>();
 builder.Services.AddScoped<IInsuredVehicleRepository, MongoInsuredVehicleRepository>();
 builder.Services.AddScoped<IPolicyRepository, MongoInsurancePolicyRepository>();
 builder.Services.AddScoped<IContractRepository, MongoContractRepository>();
 builder.Services.AddScoped<IOrderRepository, MongoOrderRepository>();
+builder.Services.AddScoped<IExtraCostRepository, MongoExtraCostRepository>();
 builder.Services.AddScoped<CalculateOrderTotalAmount>();
 builder.Services.AddScoped<AddExtraCostCommandHandler>();
 builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddScoped<IGoogleApiService, GoogleApiService>();
 builder.Services.AddSingleton<IRestClient>(sp => new RestClient());
+//builder.Services.Configure<FirebaseMessagingSettings>(options =>
+//{
+//    options.ApiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY");
+//    options.SenderId = Environment.GetEnvironmentVariable("FIREBASE_SENDER_ID");
+//    options.ProjectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
+//});
+//builder.Services.AddSingleton<IFirebaseMessagingService, FirebaseMessagingService>();
+//builder.Services.AddSingleton<IFirebaseMessagingClient, FirebaseMessagingClient>();
+//builder.Services.AddSingleton<IFirebaseAppClient, FirebaseAppClient>();
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.SetKebabCaseEndpointNameFormatter();

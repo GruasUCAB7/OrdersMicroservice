@@ -13,12 +13,10 @@ using OrdersMS.src.Orders.Domain.ValueObjects;
 namespace OrdersMS.src.Orders.Application.Commands.AddExtraCost
 {
     public class AddExtraCostCommandHandler(
-        IOrderRepository orderRepository,
-        IdGenerator<string> idGenerator
+        IOrderRepository orderRepository
     ) : IService<(string orderId, AddExtraCostCommand data), GetOrderResponse>
     {
         private readonly IOrderRepository _orderRepository = orderRepository;
-        private readonly IdGenerator<string> _idGenerator = idGenerator;
 
         public virtual async Task<Result<GetOrderResponse>> Execute((string orderId, AddExtraCostCommand data) request)
         {
@@ -36,8 +34,7 @@ namespace OrdersMS.src.Orders.Application.Commands.AddExtraCost
                 {
                     return Result<GetOrderResponse>.Failure(new InvalidExtraCostNameException(extraCost.Name));
                 }
-                var id = _idGenerator.Generate();
-                var extraCostAdded = order.AddExtraCost(new ExtraCostId(id), new ExtraCostName(extraCost.Name), new ExtraCostPrice(extraCost.Price));
+                var extraCostAdded = order.AddExtraCost(new ExtraCostId(extraCost.Id), new OrderId(order.GetId()), new ExtraCostName(extraCost.Name), new ExtraCostPrice(extraCost.Price));
                 extraCosts.Add(extraCostAdded);
             }
 

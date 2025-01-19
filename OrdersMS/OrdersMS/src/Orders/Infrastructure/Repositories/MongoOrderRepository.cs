@@ -55,6 +55,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 var extraServicesApplied = o.GetValue("extraServicesApplied").AsBsonArray
                 .Select(extraService => new ExtraCost(
                     new ExtraCostId(extraService["id"].AsString),
+                    new OrderId(o["_id"].AsString),
                     new ExtraCostName(extraService["name"].AsString),
                     new ExtraCostPrice(extraService["price"].AsDecimal)
                 )).ToList();
@@ -100,6 +101,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             var extraServicesApplied = orderDocument["extraServicesApplied"].AsBsonArray
                 .Select(extraService => new ExtraCost(
                     new ExtraCostId(extraService["id"].AsString),
+                    new OrderId(orderDocument["_id"].AsString),
                     new ExtraCostName(extraService["name"].AsString),
                     new ExtraCostPrice(extraService["price"].AsDecimal)
                 )).ToList();
@@ -246,13 +248,15 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
         public async Task<Result<Order>> UpdateExtraCosts(OrderId orderId, List<ExtraCost> extraCosts)
         {
             var filter = Builders<BsonDocument>.Filter.Eq("_id", orderId.GetValue());
-            var update = Builders<BsonDocument>.Update
-                .Set("extraServicesApplied", new BsonArray(extraCosts.Select(c => new BsonDocument
-                {
-                    { "id", c.GetId() },
-                    { "name", c.GetName() },
-                    { "price", c.GetPrice() }
-                })));
+
+            var newExtraCostsBsonArray = new BsonArray(extraCosts.Select(c => new BsonDocument
+            {
+                { "id", c.GetId() },
+                { "name", c.GetName() },
+                { "price", c.GetPrice() }
+            }));
+
+            var update = Builders<BsonDocument>.Update.Set("extraServicesApplied", newExtraCostsBsonArray);
 
             var updateResult = await _orderCollection.UpdateOneAsync(filter, update);
 
@@ -290,7 +294,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
 
                     var extraServicesApplied = orderDocument["extraServicesApplied"].AsBsonArray
                         .Select(extraService => new ExtraCost(
-                            new ExtraCostId(extraService["id"].AsString),
+                            new ExtraCostId(extraService["extraCostId"].AsString),
+                            new OrderId(extraService["_id"].AsString),
                             new ExtraCostName(extraService["name"].AsString),
                             new ExtraCostPrice(extraService["price"].AsDecimal)
                         )).ToList();
@@ -337,6 +342,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 var extraServicesApplied = o.GetValue("extraServicesApplied").AsBsonArray
                     .Select(extraService => new ExtraCost(
                         new ExtraCostId(extraService["id"].AsString),
+                        new OrderId(extraService["orderId"].AsString),
                         new ExtraCostName(extraService["name"].AsString),
                         new ExtraCostPrice(extraService["price"].AsDecimal)
                     )).ToList();

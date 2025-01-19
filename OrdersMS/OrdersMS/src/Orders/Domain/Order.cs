@@ -75,9 +75,9 @@ namespace OrdersMS.src.Orders.Domain
             _status = new OrderStatus(context.Status);
         }
 
-        public ExtraCost AddExtraCost(ExtraCostId id, ExtraCostName name, ExtraCostPrice price)
+        public ExtraCost AddExtraCost(ExtraCostId id, OrderId orderId, ExtraCostName name, ExtraCostPrice price)
         {
-            Apply(ExtraCostAdded.CreateEvent(_id, id, name, price));
+            Apply(ExtraCostAdded.CreateEvent(id, orderId, name, price));
             return _extraServicesApplied.Last();
         }
 
@@ -85,6 +85,7 @@ namespace OrdersMS.src.Orders.Domain
         {
             var extraCost = new ExtraCost(
                 new ExtraCostId(context.id),
+                new OrderId(context.OrderId),
                 new ExtraCostName(context.name),
                 new ExtraCostPrice(context.price)
             );
