@@ -21,7 +21,6 @@ namespace OrdersMS.src.Orders.Application.Commands.CreateExtraCost
             {
                 throw new OrderNotFoundException();
             }
-
             
             var extraCosts = new List<ExtraCost>();
 

@@ -8,7 +8,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
         public CreateExtraCostValidator()
         {
             RuleFor(x => x.OrderId)
-                .NotEmpty().WithMessage("OrderId is required.");
+                .NotEmpty().WithMessage("Order ID is required.");
 
             RuleForEach(x => x.ExtraCosts).ChildRules(extraCost =>
             {

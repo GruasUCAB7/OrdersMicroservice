@@ -168,7 +168,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 if (result.IsSuccessful)
                 {
                     _logger.Log("Extra costs created successfully");
-                    await _bus.Publish(command);
                     return StatusCode(201);
                 }
                 else
@@ -190,7 +189,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         {
             try
             {
-                var handler = new GetExtraCostsByOrderIdQueryHandler(_extraCostRepo);
+                var handler = new GetExtraCostsByOrderIdQueryHandler(_extraCostRepo, _orderRepo);
                 var result = await handler.Execute(orderId);
 
                 _logger.Log("List of extra costs:", string.Join(", ", result.Unwrap().ExtraCosts.Select(c => c.Id)));
@@ -584,7 +583,6 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 if (result.IsSuccessful)
                 {
                     var order = result.Unwrap();
-                    Console.WriteLine(order.DriverAssigned);
                     var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}/updateLocation", Method.Put);
                     changeLocationDriver.AddHeader("Authorization", token);
                     changeLocationDriver.AddJsonBody(new { latitude = order.IncidentAddress.Latitude, longitude = order.IncidentAddress.Longitude });
