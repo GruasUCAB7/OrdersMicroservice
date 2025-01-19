@@ -37,6 +37,7 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateTotalAmountOrder
             var listExtraCostApplied = order.GetExtrasServicesApplied()
                 .Select(extraService => new ExtraCost(
                     extraService.Id,
+                    new OrderId(order.GetId()),
                     new ExtraCostName(extraService.GetName()),
                     new ExtraCostPrice(extraService.GetPrice())
                 ))

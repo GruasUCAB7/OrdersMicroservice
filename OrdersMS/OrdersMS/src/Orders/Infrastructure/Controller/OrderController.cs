@@ -8,6 +8,8 @@ using OrdersMS.Core.Application.Logger;
 using OrdersMS.src.Contracts.Application.Repositories;
 using OrdersMS.src.Orders.Application.Commands.AddExtraCost;
 using OrdersMS.src.Orders.Application.Commands.ChangeOrderStatusToAssing;
+using OrdersMS.src.Orders.Application.Commands.CreateExtraCost;
+using OrdersMS.src.Orders.Application.Commands.CreateExtraCost.Types;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder;
 using OrdersMS.src.Orders.Application.Commands.CreateOrder.Types;
 using OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned;
@@ -28,6 +30,7 @@ using OrdersMS.src.Orders.Application.Queries.GetAllOrders;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrders.Types;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrdersByDriverAssigned;
 using OrdersMS.src.Orders.Application.Queries.GetAllOrdersByDriverAssigned.Types;
+using OrdersMS.src.Orders.Application.Queries.GetExtraCostsByOrderId;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById;
 using OrdersMS.src.Orders.Application.Queries.GetOrderById.Types;
 using OrdersMS.src.Orders.Application.Repositories;
@@ -46,6 +49,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         IOrderRepository orderRepo,
         IContractRepository contractRepo,
         IPolicyRepository policytRepo,
+        IExtraCostRepository extraCostRepo,
         IdGenerator<string> idGenerator,
         IValidator<CreateOrderCommand> validatorCreate,
         IValidator<ValidatePricesOfExtrasCostCommand> validatorPricesExtrasCost,
@@ -55,6 +59,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         IValidator<UpdateTotalAmountOrderCommand> validatorTotalAmount,
         IValidator<UpdateOrderStatusToCompletedCommand> validatorOrderstatusToCompleted,
         IValidator<UpdateOrderStatusToPaidCommand> validatorOrderstatusToPaid,
+        IValidator<CreateExtraCostCommand> createExtraCostValidator,
         CalculateOrderTotalAmount calculateOrderTotalAmount,
         AddExtraCostCommandHandler addExtraCost,
         IGoogleApiService googleApiService,
@@ -66,6 +71,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly IOrderRepository _orderRepo = orderRepo;
         private readonly IContractRepository _contractRepo = contractRepo;
         private readonly IPolicyRepository _policyRepo = policytRepo;
+        private readonly IExtraCostRepository _extraCostRepo = extraCostRepo;
         private readonly IdGenerator<string> _idGenerator = idGenerator;
         private readonly IValidator<CreateOrderCommand> _validatorCreate = validatorCreate;
         private readonly IValidator<ValidatePricesOfExtrasCostCommand> _validatorPricesExtrasCost = validatorPricesExtrasCost;
@@ -75,6 +81,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly IValidator<UpdateTotalAmountOrderCommand> _validatorTotalAmount = validatorTotalAmount;
         private readonly IValidator<UpdateOrderStatusToCompletedCommand> _validatorOrderstatusToCompleted = validatorOrderstatusToCompleted;
         private readonly IValidator<UpdateOrderStatusToPaidCommand> _validatorOrderstatusToPaid = validatorOrderstatusToPaid;
+        private readonly IValidator<CreateExtraCostCommand> _createExtraCostValidator = createExtraCostValidator;
         private readonly CalculateOrderTotalAmount _calculateOrderTotalAmount = calculateOrderTotalAmount;
         private readonly AddExtraCostCommandHandler _addExtraCost = addExtraCost;
         private readonly IGoogleApiService _googleApiService = googleApiService;
@@ -130,6 +137,68 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             catch (Exception ex)
             {
                 _logger.Exception("An error occurred while creating the order.", ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost("/createExtraCost")]
+        [Authorize(Roles = "Admin, Operator, Driver")]
+        public async Task<IActionResult> CreateExtraCost([FromBody] CreateExtraCostCommand data, [FromHeader(Name = "Authorization")] string token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    return StatusCode(400, "Invalid or missing Authorization header");
+                }
+
+                var command = new CreateExtraCostCommand(data.OrderId, data.ExtraCosts);
+
+                var validate = _createExtraCostValidator.Validate(command);
+                if (!validate.IsValid)
+                {
+                    var errors = validate.Errors.Select(e => e.ErrorMessage).ToList();
+                    _logger.Error($"Validation failed for CreateExtraCostCommand: {string.Join(", ", errors)}");
+                    return StatusCode(400, errors);
+                }
+
+                var handler = new CreateExtraCostCommandHandler(_extraCostRepo, _orderRepo, _idGenerator);
+                var result = await handler.Execute(command);
+
+                if (result.IsSuccessful)
+                {
+                    _logger.Log("Extra costs created successfully");
+                    await _bus.Publish(command);
+                    return StatusCode(201);
+                }
+                else
+                {
+                    _logger.Error("Failed to create extra cost: {ErrorMessage}", result.ErrorMessage);
+                    return StatusCode(409, result.ErrorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("An error occurred while creating the extra cost.", ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("/getExtraCostByOrderId")]
+        [Authorize(Roles = "Admin, Operator")]
+        public async Task<IActionResult> GetExtraCostByOrderId([FromQuery] string orderId)
+        {
+            try
+            {
+                var handler = new GetExtraCostsByOrderIdQueryHandler(_extraCostRepo);
+                var result = await handler.Execute(orderId);
+
+                _logger.Log("List of extra costs:", string.Join(", ", result.Unwrap().ExtraCosts.Select(c => c.Id)));
+                return StatusCode(200, result.Unwrap());
+            }
+            catch (Exception ex)
+            {
+                _logger.Exception("Failed to get list of extra costs", ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
@@ -515,8 +584,8 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                 if (result.IsSuccessful)
                 {
                     var order = result.Unwrap();
-
-                    var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Put);
+                    Console.WriteLine(order.DriverAssigned);
+                    var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}/updateLocation", Method.Put);
                     changeLocationDriver.AddHeader("Authorization", token);
                     changeLocationDriver.AddJsonBody(new { latitude = order.IncidentAddress.Latitude, longitude = order.IncidentAddress.Longitude });
 

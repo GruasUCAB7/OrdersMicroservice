@@ -24,6 +24,7 @@ namespace OrdersMS.src.Orders.Application.Commands.ChangeOrderStatusToAssing
                 {
                     var extraServices = order.GetExtrasServicesApplied().Select(extraCost => new ExtraCost(
                         new ExtraCostId(extraCost.GetId()),
+                        new OrderId(order.GetId()),
                         new ExtraCostName(extraCost.GetName()),
                         new ExtraCostPrice(extraCost.GetPrice())
                     )).ToList();
