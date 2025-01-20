@@ -11,15 +11,18 @@ namespace OrdersMS.src.Orders.Infrastructure.Validators
                 .NotNull().WithMessage("Response of operator must be true or false.")
                 .Must(response => response == true || response == false);
 
-            RuleForEach(x => x.ExtrasCostApplied)
-                .ChildRules(extraCost =>
-                {
-                    extraCost.RuleFor(x => x.Name)
-                        .NotEmpty().WithMessage("Name is required.");
+            When(x => x.ExtrasCostApplied != null, () =>
+            {
+                RuleForEach(x => x.ExtrasCostApplied)
+                    .ChildRules(extraCost =>
+                    {
+                        extraCost.RuleFor(x => x.Name)
+                            .NotEmpty().WithMessage("Name is required.");
 
-                    extraCost.RuleFor(x => x.Price)
-                        .GreaterThan(0).WithMessage("Price must be greater than zero.");
-                });
+                        extraCost.RuleFor(x => x.Price)
+                            .GreaterThan(0).WithMessage("Price must be greater than zero.");
+                    });
+            });
         }
     }
 }

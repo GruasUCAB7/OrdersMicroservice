@@ -30,20 +30,23 @@ namespace OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost
 
             if (request.data.OperatorRespose == true)
             {
-                var addExtraCostCommand = new AddExtraCostCommand(request.data.ExtrasCostApplied);
-
-                var addExtraCostResult = await _addExtraCostService.Execute((request.orderId, addExtraCostCommand));
-                if (addExtraCostResult.IsFailure)
+                if (request.data.ExtrasCostApplied != null)
                 {
-                    return Result<GetOrderResponse>.Failure(new FailedToAddingExtraCostExtraCost());
+                    var addExtraCostCommand = new AddExtraCostCommand(request.data.ExtrasCostApplied);
+
+                    var addExtraCostResult = await _addExtraCostService.Execute((request.orderId, addExtraCostCommand));
+                    if (addExtraCostResult.IsFailure)
+                    {
+                        return Result<GetOrderResponse>.Failure(new FailedToAddingExtraCostExtraCost());
+                    }
+                    var extraCosts = request.data.ExtrasCostApplied.Select(dto => new ExtraCost(
+                        new ExtraCostId(dto.Id),
+                        new OrderId(request.orderId),
+                        new ExtraCostName(dto.Name),
+                        new ExtraCostPrice(dto.Price)
+                    )).ToList();
+                    order.SetExtraServicesApplied(extraCosts);
                 }
-                var extraCosts = request.data.ExtrasCostApplied.Select(dto => new ExtraCost(
-                    new ExtraCostId(dto.Id),
-                    new OrderId(request.orderId),
-                    new ExtraCostName(dto.Name),
-                    new ExtraCostPrice(dto.Price)
-                )).ToList();
-                order.SetExtraServicesApplied(extraCosts);
             }
 
             var updateResult = await _orderRepository.Update(order);

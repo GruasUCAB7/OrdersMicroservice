@@ -5,6 +5,6 @@ namespace OrdersMS.src.Orders.Application.Commands.ValidatePricesOfExtrasCost.Ty
     public record ValidatePricesOfExtrasCostCommand
     (
         bool OperatorRespose,
-        List<ExtraCostDto> ExtrasCostApplied
+        List<ExtraCostDto>? ExtrasCostApplied
     );
 }
