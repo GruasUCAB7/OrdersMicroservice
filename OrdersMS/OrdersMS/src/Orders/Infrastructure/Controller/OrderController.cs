@@ -141,7 +141,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             }
         }
 
-        [HttpPost("/createExtraCost")]
+        [HttpPost("createExtraCost")]
         [Authorize(Roles = "Admin, Operator, Driver")]
         public async Task<IActionResult> CreateExtraCost([FromBody] CreateExtraCostCommand data, [FromHeader(Name = "Authorization")] string token)
         {
@@ -183,7 +183,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
             }
         }
 
-        [HttpGet("/getExtraCostByOrderId")]
+        [HttpGet("getExtraCostByOrderId")]
         [Authorize(Roles = "Admin, Operator")]
         public async Task<IActionResult> GetExtraCostByOrderId([FromQuery] string orderId)
         {
