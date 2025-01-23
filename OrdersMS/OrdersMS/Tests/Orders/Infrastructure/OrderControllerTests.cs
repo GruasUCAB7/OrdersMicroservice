@@ -3,6 +3,7 @@ using FluentValidation.Results;
 using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using OrdersMS.Core.Application.Firebase;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -64,6 +65,7 @@ namespace OrdersMS.Tests.Orders.Infrastructure
         private readonly Mock<IPublishEndpoint> _publishEndpointMock = new Mock<IPublishEndpoint>();
         private readonly Mock<IRestClient> _restClientMock = new Mock<IRestClient>();
         private readonly Mock<IBus> _busMock = new Mock<IBus>();
+        private readonly Mock<IFirebaseMessagingService> _firebaseServiceMock = new Mock<IFirebaseMessagingService>();
         private readonly Mock<ILoggerContract> _loggerMock = new Mock<ILoggerContract>();
         private readonly OrderController _controller;
 
@@ -91,6 +93,7 @@ namespace OrdersMS.Tests.Orders.Infrastructure
                 _publishEndpointMock.Object,
                 _restClientMock.Object,
                 _busMock.Object,
+                _firebaseServiceMock.Object,
                 _loggerMock.Object
             );
         }

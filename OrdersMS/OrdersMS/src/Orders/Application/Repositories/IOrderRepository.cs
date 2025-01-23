@@ -17,5 +17,6 @@ namespace OrdersMS.src.Orders.Application.Repositories
         Task<Result<Order>> UpdateExtraCosts(OrderId orderId, List<ExtraCost> extraCosts);
         Task<List<Order>> ValidateUpdateTimeForStatusPorAceptar();
         Task<List<Order>> GetAllOrdersByDriverAssigned(GetAllOrdersByDriverAssignedQuery data, string driverId);
+        Task<string> GetDriverDeviceToken(string driverId);
     }
 }
