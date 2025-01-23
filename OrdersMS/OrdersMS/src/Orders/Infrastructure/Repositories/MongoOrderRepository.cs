@@ -17,6 +17,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
     public class MongoOrderRepository(MongoDbService mongoDbService) : IOrderRepository
     {
         private readonly IMongoCollection<BsonDocument> _orderCollection = mongoDbService.GetOrderCollection();
+        private readonly IMongoCollection<BsonDocument> _tokenCollection = mongoDbService.GetTokenCollection();
 
         public async Task<List<Order>> GetAll(GetAllOrdersQuery data)
         {
@@ -342,7 +343,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
                 var extraServicesApplied = o.GetValue("extraServicesApplied").AsBsonArray
                     .Select(extraService => new ExtraCost(
                         new ExtraCostId(extraService["id"].AsString),
-                        new OrderId(extraService["orderId"].AsString),
+                        new OrderId(o["_id"].AsString),
                         new ExtraCostName(extraService["name"].AsString),
                         new ExtraCostPrice(extraService["price"].AsDecimal)
                     )).ToList();
@@ -372,6 +373,20 @@ namespace OrdersMS.src.Orders.Infrastructure.Repositories
             }).ToList();
 
             return orders;
+        }
+
+        public async Task<string> GetDriverDeviceToken(string driverId)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("userId", driverId);
+            var tokenDocument = await _tokenCollection.Find(filter).FirstOrDefaultAsync();
+
+            if (tokenDocument is null)
+            {
+                return null;
+            }
+
+            var token = tokenDocument.GetValue("token").AsString;
+            return token;
         }
     }
 }

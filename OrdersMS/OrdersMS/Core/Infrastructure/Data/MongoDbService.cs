@@ -50,5 +50,10 @@ namespace OrdersMS.Core.Infrastructure.Data
         {
             return _database.GetCollection<BsonDocument>("extraCost");
         }
+
+        public IMongoCollection<BsonDocument> GetTokenCollection()
+        {
+            return _database.GetCollection<BsonDocument>("notificationToken");
+        }
     }
 }

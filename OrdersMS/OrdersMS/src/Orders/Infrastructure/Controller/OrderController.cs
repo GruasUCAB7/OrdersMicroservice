@@ -2,6 +2,7 @@
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrdersMS.Core.Application.Firebase;
 using OrdersMS.Core.Application.GoogleApiService;
 using OrdersMS.Core.Application.IdGenerator;
 using OrdersMS.Core.Application.Logger;
@@ -66,6 +67,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         IPublishEndpoint publishEndpoint,
         IRestClient restClient,
         IBus bus,
+        IFirebaseMessagingService firebaseService,
         ILoggerContract logger) : ControllerBase
     {
         private readonly IOrderRepository _orderRepo = orderRepo;
@@ -88,6 +90,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly IRestClient _restClient = restClient;
         private readonly IBus _bus = bus;
+        private readonly IFirebaseMessagingService _firebaseService = firebaseService;
         private readonly ILoggerContract _logger = logger;
 
         [HttpPost]
@@ -348,7 +351,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                     return StatusCode(400, errors);
                 }
 
-                var handler = new UpdateDriverAssignedCommandHandler(_orderRepo, _publishEndpoint);
+                var handler = new UpdateDriverAssignedCommandHandler(_orderRepo, _publishEndpoint, _firebaseService);
                 var result = await handler.Execute((orderId, command));
 
                 if (result.IsSuccessful)
@@ -465,7 +468,7 @@ namespace OrdersMS.src.Orders.Infrastructure.Controller
                         throw new Exception($"Failed to update driver availability. Content: {responseDriver1.Content}");
                     }
 
-                    var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}", Method.Put);
+                    var changeLocationDriver = new RestRequest($"https://localhost:4052/provider/driver/{order.DriverAssigned}/updateLocation", Method.Put);
                     changeLocationDriver.AddHeader("Authorization", token);
                     changeLocationDriver.AddJsonBody(new { latitude = order.DestinationAddress.Latitude, longitude = order.DestinationAddress.Longitude });
 
