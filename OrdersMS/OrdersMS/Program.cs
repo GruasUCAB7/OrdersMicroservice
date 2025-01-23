@@ -77,15 +77,15 @@ builder.Services.AddScoped<IdGenerator<string>, GuidGenerator>();
 builder.Services.AddScoped<ILoggerContract, Logger>();
 builder.Services.AddScoped<IGoogleApiService, GoogleApiService>();
 builder.Services.AddSingleton<IRestClient>(sp => new RestClient());
-//builder.Services.Configure<FirebaseMessagingSettings>(options =>
-//{
-//    options.ApiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY");
-//    options.SenderId = Environment.GetEnvironmentVariable("FIREBASE_SENDER_ID");
-//    options.ProjectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
-//});
-//builder.Services.AddSingleton<IFirebaseMessagingService, FirebaseMessagingService>();
-//builder.Services.AddSingleton<IFirebaseMessagingClient, FirebaseMessagingClient>();
-//builder.Services.AddSingleton<IFirebaseAppClient, FirebaseAppClient>();
+builder.Services.Configure<FirebaseMessagingSettings>(options =>
+{
+    options.ApiKey = Environment.GetEnvironmentVariable("FIREBASE_API_KEY");
+    options.SenderId = Environment.GetEnvironmentVariable("FIREBASE_SENDER_ID");
+    options.ProjectId = Environment.GetEnvironmentVariable("FIREBASE_PROJECT_ID");
+});
+builder.Services.AddSingleton<IFirebaseMessagingService, FirebaseMessagingService>();
+builder.Services.AddSingleton<IFirebaseMessagingClient, FirebaseMessagingClient>();
+builder.Services.AddSingleton<IFirebaseAppClient, FirebaseAppClient>();
 builder.Services.AddMassTransit(busConfiguration =>
 {
     busConfiguration.SetKebabCaseEndpointNameFormatter();

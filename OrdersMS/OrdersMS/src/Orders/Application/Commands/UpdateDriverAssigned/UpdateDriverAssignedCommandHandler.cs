@@ -7,16 +7,19 @@ using OrdersMS.src.Orders.Application.Repositories;
 using OrdersMS.src.Orders.Application.Types;
 using OrdersMS.src.Orders.Domain.ValueObjects;
 using OrdersMS.src.Orders.Application.Events;
+using OrdersMS.Core.Application.Firebase;
 
 namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
 {
     public class UpdateDriverAssignedCommandHandler(
         IOrderRepository orderRepository, 
-        IPublishEndpoint publishEndpoint
+        IPublishEndpoint publishEndpoint,
+        IFirebaseMessagingService firebaseService
     ) : IService<(string orderId, UpdateDriverAssignedCommand data), GetOrderResponse>
     {
         private readonly IOrderRepository _orderRepository = orderRepository;
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IFirebaseMessagingService _firebaseService = firebaseService;
 
         public async Task<Result<GetOrderResponse>> Execute((string orderId, UpdateDriverAssignedCommand data) request)
         {
@@ -47,6 +50,12 @@ namespace OrdersMS.src.Orders.Application.Commands.UpdateDriverAssigned
             }
 
             await _publishEndpoint.Publish(new DriverAssignedToOrderEvent(Guid.Parse(order.GetId())));
+
+            var deviceToken = await _orderRepository.GetDriverDeviceToken(order.GetDriverAssigned());
+            if (!string.IsNullOrEmpty(deviceToken))
+            {
+                await _firebaseService.SendPushNotificationAsync(deviceToken, "Nueva orden asignada", "Se te ha asignado un nuevo servicio.");
+            }
 
             var extraServices = order.GetExtrasServicesApplied().Select(extraCost => new ExtraServiceDto(
                 extraCost.GetId(),

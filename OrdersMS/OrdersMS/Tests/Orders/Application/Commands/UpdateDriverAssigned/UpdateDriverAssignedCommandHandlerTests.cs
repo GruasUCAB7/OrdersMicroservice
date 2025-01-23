@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using Moq;
+using OrdersMS.Core.Application.Firebase;
 using OrdersMS.Core.Utils.Optional;
 using OrdersMS.Core.Utils.Result;
 using OrdersMS.src.Contracts.Domain.ValueObjects;
@@ -19,13 +20,15 @@ namespace OrdersMS.Tests.Orders.Application.Commands.UpdateDriverAssigned
     {
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IPublishEndpoint> _publishEndpointMock;
+        private readonly Mock<IFirebaseMessagingService> _firebaseServiceMock;
         private readonly UpdateDriverAssignedCommandHandler _handler;
 
         public UpdateDriverAssignedCommandHandlerTests()
         {
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _publishEndpointMock = new Mock<IPublishEndpoint>();
-            _handler = new UpdateDriverAssignedCommandHandler(_orderRepositoryMock.Object, _publishEndpointMock.Object);
+            _firebaseServiceMock = new Mock<IFirebaseMessagingService>();
+            _handler = new UpdateDriverAssignedCommandHandler(_orderRepositoryMock.Object, _publishEndpointMock.Object, _firebaseServiceMock.Object);
         }
 
         [Fact]
